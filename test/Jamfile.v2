@@ -2,13 +2,10 @@
 #~ Distributed under the Boost Software License, Version 1.0.
 #~ (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-import modules ;
-
-local boost-path = [ modules.peek : BOOST ] ;
 
 project
     :   requirements
-        <library>$(boost-path)/libs/test/build//boost_test_exec_monitor/<link>static
+        <library>/boost/test//boost_test_exec_monitor/<link>static
         <include>../../..
         <define>BOOST_ALL_NO_LIB=1
     ;
@@ -19,6 +16,3 @@ test-suite pool :
     [ run test_pool_alloc.cpp ]
     [ run pool_msvc_compiler_bug_test.cpp ]
     ;
-
-
-
