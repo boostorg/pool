@@ -171,10 +171,6 @@ class pool: protected simple_segregated_storage<
       //  defined for pointers to objects that are 1) in the same array, or
       //  2) subobjects of the same object [5.9/2].
       // The functor objects guarantee a total order for any pointer [20.3.3/8]
-//WAS:
-//      return (std::less_equal<void *>()(static_cast<void *>(i), chunk)
-//          && std::less<void *>()(chunk,
-//              static_cast<void *>(i + sizeof_i)));
       std::less_equal<void *> lt_eq;
       std::less<void *> lt;
       return (lt_eq(i, chunk) && lt(chunk, i + sizeof_i));
@@ -191,7 +187,6 @@ class pool: protected simple_segregated_storage<
     { return *(static_cast<void **>(ptr)); }
 
   public:
-    // The second parameter here is an extension!
     // pre: npartition_size != 0 && nnext_size != 0
     explicit pool(const size_type nrequested_size,
         const size_type nnext_size = 32)
@@ -209,7 +204,6 @@ class pool: protected simple_segregated_storage<
     //  Returns true if memory was actually deallocated
     bool purge_memory();
 
-    // These functions are extensions!
     size_type get_next_size() const { return next_size; }
     void set_next_size(const size_type nnext_size) { next_size = start_size = nnext_size; }
     size_type get_requested_size() const { return requested_size; }

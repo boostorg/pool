@@ -52,7 +52,6 @@ class object_pool: protected pool<UserAllocator>
     { return *(static_cast<void **>(ptr)); }
 
   public:
-    // This constructor parameter is an extension!
     explicit object_pool(const size_type next_size = 32)
     :pool<UserAllocator>(sizeof(T), next_size) { }
 
@@ -90,7 +89,6 @@ class object_pool: protected pool<UserAllocator>
       (free)(chunk);
     }
 
-    // These functions are extensions!
     size_type get_next_size() const { return store().get_next_size(); }
     void set_next_size(const size_type x) { store().set_next_size(x); }
 };
