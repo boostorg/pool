@@ -526,11 +526,8 @@ void * pool<UserAllocator>::ordered_malloc(const size_type n)
   const details::PODptr<size_type> node(ptr, POD_size);
 
   // Split up block so we can use what wasn't requested
-  //  (we can use "add_block" here because we know that
-  //  the free list is empty, so we don't have to use
-  //  the slower ordered version)
   if (next_size > num_chunks)
-    store().add_block(node.begin() + num_chunks * partition_size,
+    store().add_ordered_block(node.begin() + num_chunks * partition_size,
         node.element_size() - num_chunks * partition_size, partition_size);
 
   next_size <<= 1;
