@@ -100,7 +100,7 @@ public:
         set_partition_size(npartition_sz);
         allocated_blocks.push_back(
             std::make_pair<void*, std::size_t>(block, nsz) );
-        simple_segregated_storage<std::size_t>::add_block(
+        boost::simple_segregated_storage<std::size_t>::add_block(
             block, nsz, npartition_sz );
         // Post: !empty()
         BOOST_TEST(!empty());
@@ -114,7 +114,7 @@ public:
         set_partition_size(npartition_sz);
         allocated_blocks.push_back(
             std::make_pair<void*, std::size_t>(block, nsz) );
-        simple_segregated_storage<std::size_t>::add_ordered_block(
+        boost::simple_segregated_storage<std::size_t>::add_ordered_block(
             block, nsz, npartition_sz );
         // Post: !empty()
         BOOST_TEST(!empty());
@@ -122,7 +122,8 @@ public:
 
     void* malloc()
     {
-        void* const ret = simple_segregated_storage<std::size_t>::malloc();
+        void* const ret
+            = boost::simple_segregated_storage<std::size_t>::malloc();
         // Chunk returned should actually be from added blocks
         BOOST_TEST(is_inside_allocated_blocks(ret));
         check_in(ret);
@@ -133,7 +134,7 @@ public:
     {
         BOOST_ASSERT(chunk);
         check_out(chunk);
-        simple_segregated_storage<std::size_t>::free(chunk);
+        boost::simple_segregated_storage<std::size_t>::free(chunk);
         // Post: !empty()
         BOOST_TEST(!empty());
     }
@@ -142,15 +143,16 @@ public:
     {
         BOOST_ASSERT(chunk);
         check_out(chunk);
-        simple_segregated_storage<std::size_t>::ordered_free(chunk);
+        boost::simple_segregated_storage<std::size_t>::ordered_free(chunk);
         // Post: !empty()
         BOOST_TEST(!empty());
     }
 
     void* malloc_n(size_type n, size_type partition_size)
     {
-        void* const ret = simple_segregated_storage<std::size_t>::malloc_n(n,
-            partition_size);
+        void* const ret
+            = boost::simple_segregated_storage<std::size_t>::malloc_n(
+                n, partition_size );
 
         if(ret)
         {

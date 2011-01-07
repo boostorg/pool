@@ -87,7 +87,7 @@ struct track_allocator
         return ret;
     }
 
-    static char* free(char* const block)
+    static void free(char* const block)
     {
         BOOST_TEST(allocated_blocks.find(block) != allocated_blocks.end());
         allocated_blocks.erase(block);
