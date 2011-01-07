@@ -18,6 +18,9 @@
 #include <stdexcept>
 #include <vector>
 
+#include <cstdlib>
+#include <ctime>
+
 // Each "tester" object below checks into and out of the "cdtor_checker",
 //  which will check for any problems related to the construction/destruction of
 //  "tester" objects.
@@ -276,6 +279,8 @@ void test_void()
 
 int main()
 {
+    std::srand(static_cast<unsigned>(std::time(0)));
+
     test();
     test_alloc();
     test_mem_usage();

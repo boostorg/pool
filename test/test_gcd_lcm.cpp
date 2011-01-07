@@ -7,18 +7,26 @@
 
 #include <boost/pool/detail/gcd_lcm.hpp>
 #include <boost/pool/detail/ct_gcd_lcm.hpp>
+#include <boost/cstdint.hpp>
 #include <boost/limits.hpp>
 #include <boost/math/common_factor.hpp>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_int.hpp>
+#include <boost/random/variate_generator.hpp>
 
 #include <boost/detail/lightweight_test.hpp>
 
 #include <climits>
-#include <cstdlib>
 #include <ctime>
+
+boost::mt19937 gen;
 
 int main()
 {
-    std::srand(static_cast<unsigned>(std::time(0)));
+    gen.seed(static_cast<boost::uint32_t>(std::time(0)));
+    boost::uniform_int<> dist(2, 32767);
+    boost::variate_generator<boost::mt19937&,
+        boost::uniform_int<> > die(gen, dist);
 
     {
         BOOST_TEST_EQ(boost::details::pool::gcd<int>(1, 1), 1);
@@ -26,8 +34,7 @@ int main()
     }
 
     {
-        int r;
-        while((r = std::rand()) < 2) {}
+        int r = die();
 
         BOOST_TEST_EQ(boost::details::pool::gcd<int>(1, r), 1);
         BOOST_TEST_EQ(boost::details::pool::gcd<int>(r, 1), 1);
@@ -51,8 +58,7 @@ int main()
     }
 
     {
-        int r1, r2;
-        while((r1 = std::rand()) < 2 || (r2 = std::rand()) < 2) {}
+        int r1 = die(), r2 = die();
         int m = (std::numeric_limits<int>::max)();
 
         BOOST_TEST_EQ(boost::details::pool::gcd<int>(r1, r2),
@@ -73,9 +79,8 @@ int main()
 
     {
         int m = (std::numeric_limits<int>::max)();
-        int r1, r2;
-        while((r1 = std::rand()) < 2) {}
-        do { r2 = std::rand(); } while((m/r1) < r2);
+        int r2, r1 = die();
+        do { r2 = die(); } while((m/r1) < r2);
 
         BOOST_TEST_EQ(boost::details::pool::lcm<int>(r1, r2),
                       boost::details::pool::lcm<int>(r2, r1));
@@ -84,8 +89,10 @@ int main()
         BOOST_TEST_EQ(boost::details::pool::lcm<int>(r2, r1),
                       boost::math::lcm(r2, r1));
 
-        BOOST_TEST_EQ(boost::details::pool::lcm<int>(46340, 46341), 2147441940);
-        BOOST_TEST_EQ(boost::details::pool::lcm<int>(46341, 46340), 2147441940);
+        BOOST_TEST_EQ(boost::details::pool::lcm<boost::int32_t>(46340L, 46341L),
+            2147441940L);
+        BOOST_TEST_EQ(boost::details::pool::lcm<boost::int32_t>(46341L, 46340L),
+            2147441940L);
     }
 
     {
@@ -114,9 +121,12 @@ int main()
         r = boost::details::pool::ct_gcd<6916U, 3458U>::value;
         BOOST_TEST_EQ(r, 3458U);
 
-        r = boost::details::pool::ct_lcm<46340U, 46341U>::value;
-        BOOST_TEST_EQ(r, 2147441940U);
-        r = boost::details::pool::ct_lcm<46341U, 46340U>::value;
-        BOOST_TEST_EQ(r, 2147441940U);
+        if(sizeof(unsigned) >= 4)
+        {
+            r = boost::details::pool::ct_lcm<46340U, 46341U>::value;
+            BOOST_TEST_EQ(r, 2147441940U);
+            r = boost::details::pool::ct_lcm<46341U, 46340U>::value;
+            BOOST_TEST_EQ(r, 2147441940U);
+        }
     }
 }

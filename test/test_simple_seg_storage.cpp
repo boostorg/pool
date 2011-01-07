@@ -11,6 +11,9 @@
 #include <boost/pool/simple_segregated_storage.hpp>
 #include <boost/assert.hpp>
 #include <boost/math/common_factor_ct.hpp>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_int.hpp>
+#include <boost/random/variate_generator.hpp>
 
 #include <boost/detail/lightweight_test.hpp>
 
@@ -64,15 +67,20 @@ std::size_t test_is_order(test_simp_seg_store& store)
     return nchunk;
 }
 
+boost::mt19937 gen;
+
 int main()
 {
     std::srand(static_cast<unsigned>(std::time(0)));
+    gen.seed(static_cast<boost::uint32_t>(std::time(0)));
 
     /* Store::segregate(block, sz, partition_sz, end) */
     std::size_t partition_sz
         = boost::math::static_lcm<sizeof(void*), sizeof(int)>::value;
-    std::size_t block_size;
-    while((block_size = std::rand()) < partition_sz) {}
+    boost::uniform_int<> dist(partition_sz, 10000);
+    boost::variate_generator<boost::mt19937&,
+        boost::uniform_int<> > die(gen, dist);
+    std::size_t block_size = die();
     // Pre: npartition_sz >= sizeof(void*)
     //      npartition_sz = sizeof(void*) * i, for some integer i
     //      nsz >= npartition_sz
@@ -263,7 +271,7 @@ int main()
             tstore.add_ordered_block(pc + (7 * partition_sz),
                 5 * partition_sz, partition_sz);
 
-            void* pvret = tstore.malloc_n(3, partition_sz);
+            tstore.malloc_n(3, partition_sz);
             // "Order-preserving"
             test_is_order(tstore);
         }

@@ -28,16 +28,16 @@ int main()
 {
     {
         boost::pool<> p(sizeof(int));
-        int * const t = (int*)(p.malloc)();
+        (p.malloc)();
     }
 
     {
         boost::object_pool<Foo> p;
-        Foo * const t = (Foo*)(p.malloc)();
+        (p.malloc)();
     }
 
     {
-        int * const t = (int*)(boost::singleton_pool<Foo, sizeof(int)>::malloc)();
+        (boost::singleton_pool<Foo, sizeof(int)>::malloc)();
     }
     boost::singleton_pool<Foo, sizeof(int)>::purge_memory();
 
@@ -45,5 +45,6 @@ int main()
         std::vector<int, boost::pool_allocator<int> > v;
         v.push_back(8);
     }
-    boost::singleton_pool<boost::pool_allocator_tag, sizeof(int)>::release_memory();
+    boost::singleton_pool<boost::pool_allocator_tag,
+        sizeof(int)>::release_memory();
 }
