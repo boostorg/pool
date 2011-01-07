@@ -52,8 +52,8 @@ class object_pool: protected pool<UserAllocator>
     { return *(static_cast<void **>(ptr)); }
 
   public:
-    explicit object_pool(const size_type next_size = 32)
-    :pool<UserAllocator>(sizeof(T), next_size) { }
+    explicit object_pool(const size_type next_size = 32, const size_type max_size = 0)
+    :pool<UserAllocator>(sizeof(T), next_size, max_size) { }
 
     ~object_pool();
 

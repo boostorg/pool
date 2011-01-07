@@ -156,6 +156,7 @@ class pool: protected simple_segregated_storage<
     const size_type requested_size;
     size_type next_size;
     size_type start_size;
+    size_type max_size;
 
     // finds which POD in the list 'chunk' was allocated from
     details::PODptr<size_type> find_POD(void * const chunk) const;
@@ -189,8 +190,9 @@ class pool: protected simple_segregated_storage<
   public:
     // pre: npartition_size != 0 && nnext_size != 0
     explicit pool(const size_type nrequested_size,
-        const size_type nnext_size = 32)
-    :list(0, 0), requested_size(nrequested_size), next_size(nnext_size), start_size(nnext_size)
+        const size_type nnext_size = 32,
+        const size_type nmax_size = 0)
+    :list(0, 0), requested_size(nrequested_size), next_size(nnext_size), start_size(nnext_size),max_size(nmax_size)
     { }
 
     ~pool() { purge_memory(); }
@@ -206,6 +208,8 @@ class pool: protected simple_segregated_storage<
 
     size_type get_next_size() const { return next_size; }
     void set_next_size(const size_type nnext_size) { next_size = start_size = nnext_size; }
+    size_type get_max_size() const { return max_size; }
+    void set_max_size(const size_type nmax_size) { max_size = nmax_size; }
     size_type get_requested_size() const { return requested_size; }
 
     // Both malloc and ordered_malloc do a quick inlined check first for any
@@ -434,7 +438,12 @@ void * pool<UserAllocator>::malloc_need_resize()
   if (ptr == 0)
     return 0;
   const details::PODptr<size_type> node(ptr, POD_size);
-  next_size <<= 1;
+  
+  BOOST_USING_STD_MIN();
+  if(!max_size)
+    next_size <<= 1;
+  else if( next_size*partition_size/requested_size < max_size)
+    next_size = min BOOST_PREVENT_MACRO_SUBSTITUTION(next_size << 1, max_size*requested_size/ partition_size);
 
   //  initialize it,
   store().add_block(node.begin(), node.element_size(), partition_size);
@@ -458,13 +467,18 @@ void * pool<UserAllocator>::ordered_malloc_need_resize()
   if (ptr == 0)
     return 0;
   const details::PODptr<size_type> node(ptr, POD_size);
-  next_size <<= 1;
+
+  BOOST_USING_STD_MIN();
+  if(!max_size)
+    next_size <<= 1;
+  else if( next_size*partition_size/requested_size < max_size)
+    next_size = min BOOST_PREVENT_MACRO_SUBSTITUTION(next_size << 1, max_size*requested_size/ partition_size);
 
   //  initialize it,
   //  (we can use "add_block" here because we know that
   //  the free list is empty, so we don't have to use
   //  the slower ordered version)
-  store().add_block(node.begin(), node.element_size(), partition_size);
+  store().add_ordered_block(node.begin(), node.element_size(), partition_size);
 
   //  insert it into the list,
   //   handle border case
