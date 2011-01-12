@@ -44,6 +44,29 @@
 //   parameter.
 // Thanks to Jens Maurer for pointing this out!
 
+/*!
+  \file
+  \brief Fast memory allocator.
+  \details Fast memory allocator, and guarantees proper alignment of all allocated chunks.
+  Provides two UserAllocator classes and a template class pool,
+  which extends and generalizes the framework provided by the simple segregated storage solution.
+  For information on other pool-based interfaces, see the other pool interfaces.
+*/
+
+/*!
+  \mainpage Boost.Pool Memory Allocation Scheme
+
+  \section intro_sec Introduction
+
+   Pool allocation is a memory allocation scheme that is very fast, but limited in its usage.
+
+   This Doxygen-style documentation is complementary to the
+   full Quickbook-generated html and pdf documentation at www.boost.org.
+
+  This page generated from file pool.hpp.
+
+*/
+
 namespace boost {
 
 struct default_user_allocator_new_delete
@@ -133,7 +156,10 @@ class PODptr
 template <typename UserAllocator>
 class pool: protected simple_segregated_storage<
     typename UserAllocator::size_type>
-{
+{/*! \class boost::pool::pool
+  \brief A fast memory allocator, and guarantees proper alignment of all allocated chunks.
+  \tparam UserAllocator Defines the method that the Pool will use to allocate memory from the system.
+*/
   public:
     typedef UserAllocator user_allocator;
     typedef typename UserAllocator::size_type size_type;
@@ -145,8 +171,8 @@ class pool: protected simple_segregated_storage<
 
     // Returns 0 if out-of-memory
     // Called if malloc/ordered_malloc needs to resize the free list
-    void * malloc_need_resize();
-    void * ordered_malloc_need_resize();
+    void * malloc_need_resize(); //! Called if malloc needs to resize the free list.
+    void * ordered_malloc_need_resize();  //! Called if ordered_malloc needs to resize the free list.
 
   protected:
     details::PODptr<size_type> list;
@@ -164,7 +190,13 @@ class pool: protected simple_segregated_storage<
     // is_from() tests a chunk to determine if it belongs in a block
     static bool is_from(void * const chunk, char * const i,
         const size_type sizeof_i)
-    {
+    { //! \returns true if chunk was allocated from u or may be returned
+      //! as the result of a future allocation from u.
+      //!" Returns false if chunk was allocated from some other pool
+      //! or may be returned as the result of a future allocation from some other pool.
+      //! Otherwise, the return value is meaningless;
+      //! note that this function may not be used to reliably test random pointer values.
+
       // We use std::less_equal and std::less to test 'chunk'
       //  against the array bounds because standard operators
       //  may return unspecified results.
@@ -178,7 +210,7 @@ class pool: protected simple_segregated_storage<
     }
 
     size_type alloc_size() const
-    {
+    { //! \returns allocated size.
       const unsigned min_size = min_alloc_size;
       return details::pool::lcm<size_type>(requested_size, min_size);
     }
@@ -193,9 +225,13 @@ class pool: protected simple_segregated_storage<
         const size_type nnext_size = 32,
         const size_type nmax_size = 0)
     :list(0, 0), requested_size(nrequested_size), next_size(nnext_size), start_size(nnext_size),max_size(nmax_size)
-    { }
+    { //! 	Constructs a new empty Pool that can be used to allocate chunks of size RequestedSize.
+		}
 
-    ~pool() { purge_memory(); }
+    ~pool()
+    { //! 	Destructs the Pool, freeing its list of memory blocks.
+			purge_memory();
+		}
 
     // Releases memory blocks that don't have chunks allocated
     // pre: lists are ordered
@@ -210,14 +246,23 @@ class pool: protected simple_segregated_storage<
     void set_next_size(const size_type nnext_size) { next_size = start_size = nnext_size; }
     size_type get_max_size() const { return max_size; }
     void set_max_size(const size_type nmax_size) { max_size = nmax_size; }
-    size_type get_requested_size() const { return requested_size; }
+    size_type get_requested_size() const
+    { //! 	\returns the value passed into the constructor.
+    //! This value will not change during the lifetime of a Pool object.
+			return requested_size;
+	  }
 
     // Both malloc and ordered_malloc do a quick inlined check first for any
     //  free chunks.  Only if we need to get another memory block do we call
     //  the non-inlined *_need_resize() functions.
     // Returns 0 if out-of-memory
     void * malloc BOOST_PREVENT_MACRO_SUBSTITUTION()
-    {
+    { //! Allocates a chunk of memory. Searches in the list of memory blocks
+      //! for a block that has a free chunk, and returns that free chunk if found.
+      //! Otherwise, creates a new memory block, adds its free list to t's free list,
+      //! and returns a free chunk from that block.
+      //! If a new memory block cannot be allocated, returns 0. Amortized O(1).
+
       // Look for a non-empty storage
       if (!store().empty())
         return (store().malloc)();
@@ -225,7 +270,7 @@ class pool: protected simple_segregated_storage<
     }
 
     void * ordered_malloc()
-    {
+    { //! 	Same as malloc, only merges the free lists, to preserve order. Amortized O(1).
       // Look for a non-empty storage
       if (!store().empty())
         return (store().malloc)();
@@ -235,16 +280,24 @@ class pool: protected simple_segregated_storage<
     // Returns 0 if out-of-memory
     // Allocate a contiguous section of n chunks
     void * ordered_malloc(size_type n);
+    //! Same as malloc, only allocates enough contiguous chunks to cover n * requested_size bytes. Amortized O(n).
 
     // pre: 'chunk' must have been previously
     //        returned by *this.malloc().
     void free BOOST_PREVENT_MACRO_SUBSTITUTION(void * const chunk)
-    { (store().free)(chunk); }
+    {//! 	Deallocates a chunk of memory. Note that chunk may not be 0. O(1).
+      //! chunk must have been previously returned by t.malloc() or t.ordered_malloc().
+      (store().free)(chunk);
+    }
 
     // pre: 'chunk' must have been previously
     //        returned by *this.malloc().
     void ordered_free(void * const chunk)
-    { store().ordered_free(chunk); }
+    { //! Same as above, but is order-preserving.
+      //! Note that chunk may not be 0. O(N) with respect to the size of the free list.
+      //! chunk must have been previously returned by t.malloc() or t.ordered_malloc().
+      store().ordered_free(chunk);
+    }
 
     // pre: 'chunk' must have been previously
     //        returned by *this.malloc(n).
@@ -261,7 +314,11 @@ class pool: protected simple_segregated_storage<
     // pre: 'chunk' must have been previously
     //        returned by *this.malloc(n).
     void ordered_free(void * const chunks, const size_type n)
-    {
+    { //! Assumes that chunk actually refers to a block of chunks spanning n * partition_sz bytes;
+      //! deallocates each chunk in that block.
+      //! Note that chunk may not be 0. Order-preserving. O(N + n) where N is the size of the free list.
+			//! chunk must have been previously returned by t.malloc() or t.ordered_malloc().
+
       const size_type partition_size = alloc_size();
       const size_type total_req_size = n * requested_size;
       const size_type num_chunks = total_req_size / partition_size +
@@ -272,7 +329,12 @@ class pool: protected simple_segregated_storage<
 
     // is_from() tests a chunk to determine if it was allocated from *this
     bool is_from(void * const chunk) const
-    {
+    { //! \returns Returns true if chunk was allocated from u or
+      //! may be returned as the result of a future allocation from u.
+      //! Returns false if chunk was allocated from some other pool or
+      //! may be returned as the result of a future allocation from some other pool.
+      //! Otherwise, the return value is meaningless.
+      //! Note that this function may not be used to reliably test random pointer values.
       return (find_POD(chunk).valid());
     }
 };
@@ -365,7 +427,7 @@ bool pool<UserAllocator>::release_memory()
       //     free_p points to the first free chunk in some next memory block, or
       //       0 if there is no such chunk.
       //     prev_free_p points to the last free chunk in this memory block.
-      
+
       // We are just about to advance ptr.  Maintain the invariant:
       // prev is the PODptr whose next() is ptr, or !valid()
       // if there is no such PODptr
@@ -438,7 +500,7 @@ void * pool<UserAllocator>::malloc_need_resize()
   if (ptr == 0)
     return 0;
   const details::PODptr<size_type> node(ptr, POD_size);
-  
+
   BOOST_USING_STD_MIN();
   if(!max_size)
     next_size <<= 1;

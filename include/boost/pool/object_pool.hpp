@@ -75,12 +75,19 @@ class object_pool: protected pool<UserAllocator>
       return ret;
     }
 
-    // Include automatically-generated file for family of template construct()
-    //  functions
+// Include automatically-generated file for family of template construct() functions.
+// Copy .inc renamed .ipp to conform to Doxygen include filename expectations, PAB 12 Jan 11.
+// But still get Doxygen warning:
+// I:/boost-sandbox/guild/pool/boost/pool/object_pool.hpp:82:
+// Warning: include file boost/pool/detail/pool_construct.ipp
+// not found, perhaps you forgot to add its directory to INCLUDE_PATH?
+// But the file IS found and referenced OK, but cannot view code.
+// Is this because not at the head of the file, or ?
+
 #ifndef BOOST_NO_TEMPLATE_CV_REF_OVERLOADS
-#   include <boost/pool/detail/pool_construct.inc>
+#   include <boost/pool/detail/pool_construct.ipp>
 #else
-#   include <boost/pool/detail/pool_construct_simple.inc>
+#   include <boost/pool/detail/pool_construct_simple.ipp>
 #endif
 
     void destroy(element_type * const chunk)
