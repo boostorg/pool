@@ -40,7 +40,7 @@
 
 [section:overview Overview]
 
-[heading How to Use This Documentation]
+[heading Documentation Naming and Formatting Conventions]
 
 This documentation makes use of the following naming and formatting conventions.
 
@@ -91,7 +91,8 @@ See the [@interfaces.html pool interfaces document],
 which covers the different Pool interfaces supplied by this library.
 [h5 Library Structure and Dependencies]
 
-Forward declarations of all the exposed symbols for this library are in the header <boost/pool/poolfwd.hpp>.
+Forward declarations of all the exposed symbols for this library 
+are in the header made inscope by `#include <boost/pool/poolfwd.hpp>`.
 
 The library may use macros, which will be prefixed with `BOOST_POOL_`.
 The exception to this rule are the include file guards,
@@ -131,8 +132,6 @@ If there is a project file supplied instead of a makefile,
 
 [endsect] [/section:testing Building the Test Programs]
 
-[section:docmap Documentation Map]
-
 [h5 Overview of Pooling ]
 
 [section:pooling Pool Concepts - Basic ideas behind pooling]
@@ -140,7 +139,7 @@ If there is a project file supplied instead of a makefile,
 
 Everyone uses dynamic memory allocation.
 If you have ever called malloc or new, then you have used dynamic memory allocation.
-Most programmers have a tendency to treat the heap as a "magic bag":
+Most programmers have a tendency to treat the heap as a ["magic bag"]:
 we ask it for memory, and it magically creates some for us.
 Sometimes we run into problems because the heap is not magic.
 
@@ -165,13 +164,17 @@ it uses part of that memory to maintain its internal tree or list structure.
 Even when a chunk is malloc'ed out to a program, the memory manager
 must ['save] some information in it - usually just its size.
 Then, when the block is free'd, the memory manager can easily tell how large it is.
-[br]
+
+[br] 
+[section:mbna Memory block, allocated (not by process)]
+
+[/<caption>      <span class="emphasis"><em>Memory block, not allocated</em></span>    </caption>]
 
 '''
-<table cellspacing="0" border="3" rules="none" style="float: left; clear: both;" summary="">
-    <caption>
-      <span class="emphasis"><em>Memory block, not allocated</em></span>
-    </caption>
+<table cellspacing="0" border="3" rules="none" style="float: left; clear: both;" summary="Memory not used by process">
+    <tr>
+      <td style="background-color: white; text-align: center;">Memory block, not allocated</td>
+    </tr>
 
     <tr>
       <td style="background-color: red; text-align: center;">Memory not belonging to process</td>
@@ -193,15 +196,19 @@ Then, when the block is free'd, the memory manager can easily tell how large it 
     </tr>
   </table>
 '''
+[endsect]
 [br]
+[/h4 Memory block, allocated (used by process)]
+[br]
+[section:mba Memory block, allocated (in use by process)]
+
+[/<caption>      <span class="emphasis"><em>Memory block, allocated (used by program)</em></span>    </caption>]
 
 '''
-  <table cellspacing="0" border="3" rules="none" style=
-  "float: right; clear: both;" summary="">
-    <caption>
-      <span class="emphasis"><em>Memory block, allocated (used by program)</em></span>
-
-    </caption>
+  <table cellspacing="0" border="3" rules="none" style= "float: right; clear: both;" summary="Memory used by program">
+    <tr>
+      <td style="background-color: white; text-align: center;">Memory block, allocated (used by process)</td>
+    </tr>
 
     <tr>
       <td style="background-color: red; text-align: center;">Memory not belonging to process</td>
@@ -222,6 +229,10 @@ Then, when the block is free'd, the memory manager can easily tell how large it 
   </table>
 '''
 [br]
+[br]
+[endsect] 
+
+[h5 Dynamic memory allocation is often inefficient]
 
 Because of the complication of dynamic memory allocation,
 it is often inefficient in terms of time and/or space.
@@ -643,14 +654,264 @@ the contiguous allocation algorithm would have failed to find any of the contigu
 [endsect] [/section:alignment  Guaranteeing Alignment - How we guarantee alignment portably.]
 
 
-* [@interfaces.html interfaces.html] - What interfaces are provided and when to use each one.
-* Pool Exposed Interfaces 
+[section:interfaces Boost Pool Interfaces - What interfaces are provided and when to use each one.]
+
+[h4 Introduction]
+
+There are several interfaces provided which allow users great flexibility
+in how they want to use Pools. 
+Review the concepts document to get the basic understanding of how Pools work.
+
+[h3 Terminology and Tradeoffs]
+
+[h5 Object Usage vs. Singleton Usage]
+
+Object Usage is the method where each Pool is an object that may be created and destroyed.
+Destroying a Pool implicitly frees all chunks that have been allocated from it.
+
+Singleton Usage is the method where each Pool is an object with static duration;
+that is, it will not be destroyed until program exit.
+Pool objects with Singleton Usage may be shared;
+thus, Singleton Usage implies thread-safety as well.
+System memory allocated by Pool objects with Singleton Usage
+may be freed through release_memory or purge_memory.
+
+[h5 Out-of-Memory Conditions: Exceptions vs. Null Return]
+
+Some Pool interfaces throw exceptions when out-of-memory;
+others will return 0. In general, unless mandated by the Standard,
+Pool interfaces will always prefer to return 0 instead of throw an exception.
+
+[section:interfaces Pool Interfaces]
+
+[section:pool pool]
+
+The [@interfaces/pool.html pool interface]
+is a simple Object Usage interface with Null Return.
+
+Example:
+[pre 
+void func()
+{
+  boost::pool<> p(sizeof(int));
+  for (int i = 0; i < 10000; ++i)
+  {
+    int * const t = p.malloc();
+    ... // Do something with t; don't take the time to free() it
+  }
+} // on function exit, p is destroyed, and all malloc()'ed ints are implicitly freed
+
+]
+[endsect] [/section pool]
+
+
+[section:object_pool object_pool]
+
+The [@interfaces/object_pool.html object_pool interface]
+is an Object Usage interface with Null Return,
+but is aware of the type of the object for which it is allocating chunks.
+On destruction, any chunks that have been allocated
+from that object_pool will have their destructors called.
+
+Example:
+[pre 
+struct X { ... }; // has destructor with side-effects
+
+void func()
+{
+  boost::object_pool<X> p;
+  for (int i = 0; i < 10000; ++i)
+  {
+    X * const t = p.malloc();
+    ... // Do something with t; don't take the time to free() it
+  }
+} // on function exit, p is destroyed, and all destructors for the X objects are called
+]
+
+[endsect] [/section object_pool]
+
+[section:singleton_pool singleton_pool]
+
+The [@interfaces/singleton_pool.html singleton_pool interface]
+is a Singleton Usage interface with Null Return.
+It's just the same as the pool interface but with Singleton Usage instead.
+
+Example:
+[pre 
+struct MyPoolTag { };
+
+typedef boost::singleton_pool<MyPoolTag, sizeof(int)> my_pool;
+void func()
+{
+  for (int i = 0; i < 10000; ++i)
+  {
+    int * const t = my_pool::malloc();
+    ... // Do something with t; don't take the time to free() it
+  }
+  // Explicitly free all malloc()'ed int's
+  my_pool::purge_memory();
+}
+]
+[endsect] [/section singleton_pool]
+
+[section:pool_alloc pool_alloc]
+
+The [@interfaces/pool_alloc.html pool_alloc interface] is a Singleton Usage interface with Exceptions.
+It is built on the singleton_pool interface,
+and provides a Standard Allocator-compliant class (for use in containers, etc.).
+
+Example:
+[pre 
+void func()
+{
+  std::vector<int, boost::pool_allocator<int> > v;
+  for (int i = 0; i < 10000; ++i)
+    v.push_back(13);
+} // Exiting the function does NOT free the system memory allocated by the pool allocator
+  // You must call
+  //  boost::singleton_pool<boost::pool_allocator_tag, sizeof(int)>::release_memory()
+  // in order to force that
+
+]
+[endsect] [/section pool_alloc]
+
+[endsect] [/section:interfaces The Interfaces - pool, object_pool and singleton_pool]
+
+
+[h4 Future Directions]
+
+Another pool interface will be written: a base class for per-class pool allocation.
+This "pool_base" interface will be Singleton Usage with Exceptions,
+and built on the singleton_pool interface.
+
+[endsect] [/section:interfaces- What interfaces are provided and when to use each one.]
+
+
+[section:exposed Pool Exposed Interfaces ]
+
+[section:simple_segregated  Simple_segregated_storage  - Not for the faint of heart; embedded programmers only!]
+
+[h4 Introduction]
+
+simple_segregated_storage.hpp provides a template class simple_segregated_storage
+that controls access to a free list of memory chunks.
+Please note that this is a very simple class, with preconditions on almost all its functions.
+It is intended to be the fastest and smallest possible quick memory allocator
+for example, something to use in embedded systems.
+This class delegates many difficult preconditions to the user (especially alignment issues).
+For more general usage, see [@../interfaces.html the other pool interfaces].
+
+[h4 Synopsis]
+[pre 
+template <typename SizeType = std::size_t>
+class simple_segregated_storage
+{
+  private:
+    simple_segregated_storage(const simple_segregated_storage &);
+    void operator=(const simple_segregated_storage &);
+
+  public:
+    typedef SizeType size_type;
+
+    simple_segregated_storage();
+    ~simple_segregated_storage();
+
+    static void * segregate(void * block,
+        size_type nsz, size_type npartition_sz,
+        void * end = 0);
+    void add_block(void * block,
+        size_type nsz, size_type npartition_sz);
+    void add_ordered_block(void * block,
+        size_type nsz, size_type npartition_sz);
+
+    bool empty() const;
+
+    void * malloc();
+    void free(void * chunk);
+    void ordered_free(void * chunk);
+    void * malloc_n(size_type n, size_type partition_sz);
+    void free_n(void * chunks, size_type n,
+        size_type partition_sz);
+    void ordered_free_n(void * chunks, size_type n,
+        size_type partition_sz);
+};
+]
+
+[h4 Semantics]
+
+An object of type `simple_segregated_storage<SizeType>`
+is empty if its free list is empty.
+If it is not empty, then it is ordered if its free list is ordered.
+A free list is ordered if repeated calls to` malloc()` will result in
+a constantly-increasing sequence of values, as determined by `std::less<void *>`.
+A member function is order-preserving if the free list maintains its order orientation
+(that is, an ordered free list is still ordered after the member function call).
+
+[table:ss_symbols Symbol Table 
+[ [Symbol] [Meaning] ]
+[ [Store] [simple_segregated_storage<SizeType>] ]
+[ [t] [value of type Store] ]
+[ [u] [value of type const Store] ]
+[ [block, chunk, end] [values of type void *] ]
+[ [partition_sz, sz, n] [values of type Store::size_type] ]
+]
+
+[table:templates Template Parameters
+[ [Parameter] [Default] [Requirements] ]
+[ [SizeType] [std::size_t] [An unsigned integral type] ]
+]
+
+[table:Typedefs Typedefs [ [Symbol] [Type] ]
+[ [size_type] [SizeType] ]
+]
+
+[table:Constructors Constructors, Destructors, and State
+[ [Expression] [Return Type] [Post-Condition] [Notes] ]
+[ [Store()] [not used] [empty()] [Constructs a new Store] ]
+[ [(&t)->~Store()] [not used] [] [Destructs the Store] ]
+[ [u.empty()] [bool] [] [Returns true if u is empty. Order-preserving.] ]
+]
+
+[table:Segregation Segregation
+[ [Expression] [Return Type] [Pre-Condition] [Post-Condition] [Semantic Equivalence] [Notes] ]
+[ [Store::segregate(block, sz, partition_sz, end)] [void *] [partition_sz >= sizeof(void *)
+partition_sz = sizeof(void *) * i, for some integer i
+sz >= partition_sz
+block is properly aligned for an array of objects of size partition_sz
+block is properly aligned for an array of void *] [] [] [Interleaves a free list through the memory block specified by block of size sz bytes, partitioning it into as many partition_sz-sized chunks as possible. The last chunk is set to point to end, and a pointer to the first chunck is returned (this is always equal to block). This interleaved free list is ordered. O(sz).] ]
+[ [Store::segregate(block, sz, partition_sz)] [void *] [Same as above] [] [Store::segregate(block, sz, partition_sz, 0)] [] ]
+[ [t.add_block(block, sz, partition_sz)] [void] [Same as above] [!t.empty()] [] [Segregates the memory block specified by block of size sz bytes into partition_sz-sized chunks, and adds that free list to its own. If t was empty before this call, then it is ordered after this call. O(sz).] ]
+[ [t.add_ordered_block(block, sz, partition_sz)] [void] [Same as above] [!t.empty()] [] [Segregates the memory block specified by block of size sz bytes into partition_sz-sized chunks, and merges that free list into its own. Order-preserving. O(sz).] ]
+]
+
+[table:alloc Allocation and Deallocation 
+[ [Expression] [Return Type] [Pre-Condition] [Post-Condition] [Semantic Equivalence] [Notes] ]
+[ [t.malloc()] [void *] [!t.empty()] [] [] [Takes the first available chunk from the free list and returns it. Order-preserving. O(1).] ]
+[ [t.free(chunk)] [void] [chunk was previously returned from a call to t.malloc()] [!t.empty()] [] [Places chunk back on the free list. Note that chunk may not be 0. O(1).] ]
+[ [t.ordered_free(chunk)] [void] [Same as above] [!t.empty()] [] [Places chunk back on the free list. Note that chunk may not be 0. Order-preserving. O(N) with respect to the size of the free list.] ]
+[ [t.malloc_n(n, partition_sz)] [void *] [] [] [] [Attempts to find a contiguous sequence of n partition_sz-sized chunks. If found, removes them all from the free list and returns a pointer to the first. If not found, returns 0. It is strongly recommended (but not required) that the free list be ordered, as this algorithm will fail to find a contiguous sequence unless it is contiguous in the free list as well. Order-preserving. O(N) with respect to the size of the free list.] ]
+[ [t.free_n(chunk, n, partition_sz)] [void] [chunk was previously returned from a call to t.malloc_n(n, partition_sz)] [!t.empty()] [t.add_block(chunk, n * partition_sz, partition_sz)] [Assumes that chunk actually refers to a block of chunks spanning n * partition_sz bytes; segregates and adds in that block. Note that chunk may not be 0. O(n).] ]
+[ [t.ordered_free_n(chunk, n, partition_sz)] [void] [same as above] [same as above] [t.add_ordered_block(chunk, n * partition_sz, partition_sz)] [Same as above, except it merges in the free list. Order-preserving. O(N + n) where N is the size of the free list.] ]
+]
+
+[h4 Symbols]
+* boost::simple_segregated_storage
+
+[endsect] [/section:simple_segregated_storage]
+
+
+[endsect] [/section:exposed Pool Exposed Interfaces ]
+
+
+
 * [@interfaces/simple_segregated_storage.html interfaces/simple_segregated_storage.html] - Not for the faint of heart; embedded programmers only.
 * [@interfaces/pool.html interfaces/pool.html] - The basic pool interface.
 * [@interfaces/singleton_pool.html interfaces/singleton_pool.html] - The basic pool interface as a thread-safe singleton.
 * [@interfaces/object_pool.html interfaces/object_pool.html] - A type-oriented (instead of size-oriented) pool interface.
 * [@interfaces/pool_alloc.html interfaces/pool_alloc.html] - A Standard Allocator pool interface based on singleton_pool.
 * [@interfaces/user_allocator.html interfaces/user_allocator.html] - OK, not a pool interface, but it describes how the user can control how Pools allocate system memory.
+
+
 * Pool Implementation Details and Extensions 
 * Interface Implementations and Extensions 
 * [@implementation/simple_segregated_storage.html implementation/simple_segregated_storage.html]
@@ -667,7 +928,7 @@ the contiguous allocation algorithm would have failed to find any of the contigu
 * [@implementation/pool_construct.html implementation/pool_construct.html] - The system for supporting more constructor arguments in object_pool.
 * [@implementation/singleton.html implementation/singleton.html] - Singleton that avoids static initialization problem.
 
-[endsect] [/section:docmap Documentation Map]
+[xinclude autodoc.xml] [/ Using Doxygen reference documentation.]
 
 [endsect] [/section:pool Boost Pool Library]
 
