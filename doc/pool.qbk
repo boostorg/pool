@@ -384,14 +384,14 @@ These chunks are what are allocated and deallocated by the user.
 
 Each Pool has a single free list that can extend over a number of memory blocks.
 Thus, Pool also has a linked list of allocated memory blocks.
-Each memory block, by default, is allocated using new[],
+Each memory block, by default, is allocated using new\[\],
 and all memory blocks are freed on destruction.
-It is the use of new[] that allows us to guarantee alignment.
+It is the use of new\[\] that allows us to guarantee alignment.
 
 [h4 Proof of Concept: Guaranteeing Alignment]
 
 Each block of memory is allocated as a POD type
-(specifically, an array of characters) through operator new[].
+(specifically, an array of characters) through operator new\[\].
 Let POD_size be the number of characters allocated.
 
 [h6 Predicate 1: Arrays may not have padding]
@@ -405,7 +405,7 @@ This implies that the size of an array of n elements is n times the size of an e
 Therefore, arrays cannot contain padding, 
 though the elements within the arrays may contain padding.
 
-[h6 Predicate 2: Any block of memory allocated as an array of characters through operator new[]
+[h6 Predicate 2: Any block of memory allocated as an array of characters through operator new\[\]
 (hereafter referred to as the block) is properly aligned for any object of that size or smaller]
 
 This follows from:
@@ -861,7 +861,8 @@ A member function is order-preserving if the free list maintains its order orien
 [ [SizeType] [std::size_t] [An unsigned integral type] ]
 ]
 
-[table:Typedefs Typedefs [ [Symbol] [Type] ]
+[table:Typedefs Typedefs
+[ [Symbol] [Type] ]
 [ [size_type] [SizeType] ]
 ]
 
