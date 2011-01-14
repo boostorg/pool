@@ -33,14 +33,19 @@
 [def __pre_conditions [*PreConditions:]]
 [def __requires [*Requires:]]
 
+[def __pool_interfaces [link boost_pool.pool.interfaces Pool Interfaces]]
+
+[def __todo [link boost_pool.appendices.todo TODO]]
+
+
 [template mu[]'''&#x3BC;'''] [/ µ Greek small letter mu]
 [template plusminus[]'''&#x00B1;'''] [/  ? plus or minus sign]
 
 [section:pool Boost Pool Library]
 
-[section:overview Overview]
+__todo
 
-[heading Documentation Naming and Formatting Conventions]
+[section:conventions Documentation Naming and Formatting Conventions]
 
 This documentation makes use of the following naming and formatting conventions.
 
@@ -59,7 +64,7 @@ Finally, you can mentally add the following to any code fragments in this docume
     // Include all of Pool files
     #include <boost/pool.hpp>
 
-[endsect] [/section:overview Overview]
+[endsect] [/section:conventions Documentation Naming and Formatting Conventions]
 
 [section:introduction Introduction]
 [h5 What is Pool?]
@@ -87,8 +92,8 @@ In general, use Pools when you need a more efficient way to do unusual memory co
 
 [section:usage How do I use Pool?]
 
-See the [@interfaces.html pool interfaces document],
-which covers the different Pool interfaces supplied by this library.
+See the __pool_interfaces section that covers the different Pool interfaces supplied by this library.
+
 [h5 Library Structure and Dependencies]
 
 Forward declarations of all the exposed symbols for this library 
@@ -105,7 +110,139 @@ Every header used only by the implementation is in the subdirectory `/detail/`.
 
 Any header in the library may include any other header in the library
 or any system-supplied header at its discretion.
+
 [endsect] [/section:usage How do I use Pool?]
+
+[section:interfaces Boost Pool Interfaces - What interfaces are provided and when to use each one.]
+
+[h4 Introduction]
+
+There are several interfaces provided which allow users great flexibility
+in how they want to use Pools. 
+Review the concepts document to get the basic understanding of how Pools work.
+
+[h3 Terminology and Tradeoffs]
+
+[h5 Object Usage vs. Singleton Usage]
+
+Object Usage is the method where each Pool is an object that may be created and destroyed.
+Destroying a Pool implicitly frees all chunks that have been allocated from it.
+
+Singleton Usage is the method where each Pool is an object with static duration;
+that is, it will not be destroyed until program exit.
+Pool objects with Singleton Usage may be shared;
+thus, Singleton Usage implies thread-safety as well.
+System memory allocated by Pool objects with Singleton Usage
+may be freed through release_memory or purge_memory.
+
+[h5 Out-of-Memory Conditions: Exceptions vs. Null Return]
+
+Some Pool interfaces throw exceptions when out-of-memory;
+others will return 0. In general, unless mandated by the Standard,
+Pool interfaces will always prefer to return 0 instead of throw an exception.
+
+[section:interfaces Pool Interfaces]
+
+[section:pool pool]
+
+The [@interfaces/pool.html pool interface]
+is a simple Object Usage interface with Null Return.
+
+Example:
+[pre 
+void func()
+{
+  boost::pool<> p(sizeof(int));
+  for (int i = 0; i < 10000; ++i)
+  {
+    int * const t = p.malloc();
+    ... // Do something with t; don't take the time to free() it
+  }
+} // on function exit, p is destroyed, and all malloc()'ed ints are implicitly freed
+
+]
+[endsect] [/section pool]
+
+
+[section:object_pool object_pool]
+
+The [@interfaces/object_pool.html object_pool interface]
+is an Object Usage interface with Null Return,
+but is aware of the type of the object for which it is allocating chunks.
+On destruction, any chunks that have been allocated
+from that object_pool will have their destructors called.
+
+Example:
+[pre 
+struct X { ... }; // has destructor with side-effects
+
+void func()
+{
+  boost::object_pool<X> p;
+  for (int i = 0; i < 10000; ++i)
+  {
+    X * const t = p.malloc();
+    ... // Do something with t; don't take the time to free() it
+  }
+} // on function exit, p is destroyed, and all destructors for the X objects are called
+]
+
+[endsect] [/section object_pool]
+
+[section:singleton_pool singleton_pool]
+
+The [@interfaces/singleton_pool.html singleton_pool interface]
+is a Singleton Usage interface with Null Return.
+It's just the same as the pool interface but with Singleton Usage instead.
+
+Example:
+[pre 
+struct MyPoolTag { };
+
+typedef boost::singleton_pool<MyPoolTag, sizeof(int)> my_pool;
+void func()
+{
+  for (int i = 0; i < 10000; ++i)
+  {
+    int * const t = my_pool::malloc();
+    ... // Do something with t; don't take the time to free() it
+  }
+  // Explicitly free all malloc()'ed int's
+  my_pool::purge_memory();
+}
+]
+[endsect] [/section singleton_pool]
+
+[section:pool_alloc pool_alloc]
+
+The [@interfaces/pool_alloc.html pool_alloc interface] is a Singleton Usage interface with Exceptions.
+It is built on the singleton_pool interface,
+and provides a Standard Allocator-compliant class (for use in containers, etc.).
+
+Example:
+[pre 
+void func()
+{
+  std::vector<int, boost::pool_allocator<int> > v;
+  for (int i = 0; i < 10000; ++i)
+    v.push_back(13);
+} // Exiting the function does NOT free the system memory allocated by the pool allocator
+  // You must call
+  //  boost::singleton_pool<boost::pool_allocator_tag, sizeof(int)>::release_memory()
+  // in order to force that
+
+]
+[endsect] [/section pool_alloc]
+
+[endsect] [/section:interfaces The Interfaces - pool, object_pool and singleton_pool]
+
+[h4 Future Directions]
+
+Another pool interface will be written: a base class for per-class pool allocation.
+This "pool_base" interface will be Singleton Usage with Exceptions,
+and built on the singleton_pool interface.
+
+[endsect] [/section:interfaces- What interfaces are provided and when to use each one.]
 
 [section:installation Installation]
 
@@ -132,10 +269,12 @@ If there is a project file supplied instead of a makefile,
 
 [endsect] [/section:testing Building the Test Programs]
 
-[h5 Overview of Pooling ]
+[section:pooling Pool in more depth]
 
-[section:pooling Pool Concepts - Basic ideas behind pooling]
-[: ['Dynamic memory allocation has been a fundamental part of most computer systems since roughly 1960...] [@#ref1 1] ]
+[section:concepts  - Basic ideas behind pooling]
+
+[: ['Dynamic memory allocation has been a fundamental part
+of most computer systems since roughly 1960...] [@#ref1 1] ]
 
 Everyone uses dynamic memory allocation.
 If you have ever called malloc or new, then you have used dynamic memory allocation.
@@ -146,14 +285,16 @@ Sometimes we run into problems because the heap is not magic.
 The heap is limited.
 Even on large systems (i.e., not embedded) with huge amounts of virtual memory available,
 there is a limit. Everyone is aware of the physical limit,
-but there is a more subtle, 'virtual' limit, that limit at which your program (or the entire system)
-slows down due to the use of virtual memory. This virtual limit is much closer 
-to your program than the physical limit, especially if you are running on a multitasking system.
+but there is a more subtle, 'virtual' limit, that limit at which your program
+(or the entire system) slows down due to the use of virtual memory.
+This virtual limit is much closer to your program than the physical limit,
+especially if you are running on a multitasking system.
 Therefore, when running on a large system, it is considered ['nice] 
 to make your program use as few resources as necessary, and release them as soon as possible.
 When using an embedded system, programmers usually have no memory to waste.
 
-The heap is complicated. It has to satisfy any type of memory request, for any size, and do it fast.
+The heap is complicated.
+It has to satisfy any type of memory request, for any size, and do it fast.
 The common approaches to memory management have to do with splitting the memory up into portions,
 and keeping them ordered by size in some sort of a tree or list structure. Add in other factors,
 such as locality and estimating lifetime, and heaps quickly become very complicated.
@@ -263,7 +404,8 @@ Almost all memory overhead is done away with, and all allocations can take place
 in a small amount of (amortized) constant time.
 However, this is done at the loss of generality;
 simple segregated storage only can allocate memory chunks of a single size.
-[endsect] [/section:pooling Pool Concepts]
+
+[endsect] [/section:concepts  - Basic ideas behind pooling]
 
 [section:simple Simple Segregated Storage]
 
@@ -329,47 +471,6 @@ where many (noncontiguous) small objects may be allocated on the heap,
 or if allocation and deallocation of the same-sized objects happens repeatedly.
 
 [endsect] [/section:simple Simple Segregated Storage]
-
-[section:references References]
-# [@ Doug Lea, A Memory Allocator.] See [@http://gee.cs.oswego.edu/dl/html/malloc.html http://gee.cs.oswego.edu/dl/html/malloc.html]
-# [@ Paul R. Wilson, Mark S. Johnstone, Michael Neely, and David Boles,
-['Dynamic Storage Allocation: A Survey and Critical Review]
-in International Workshop on Memory Management, September 1995, pg. 28, 36.]
-See [@ftp://ftp.cs.utexas.edu/pub/garbage/allocsrv.ps ftp://ftp.cs.utexas.edu/pub/garbage/allocsrv.ps]
-
-[endsect] [/section:references References]
-
-[section:implementations Other Implementations]
-
-Pool allocators are found in many programming languages, and in many variations.
-The beginnings of many implementations may be found in common programming literature;
-some of these are given below. Note that none of these are complete implementations of a Pool;
-most of these leave some aspects of a Pool as a user exercise. However, in each case,
-even though some aspects are missing, these examples use the same underlying concept
-of a Simple Segregated Storage described in this document.
-
-# ['The C++ Programming Language], 3rd ed., by Bjarne Stroustrup, Section 19.4.2. Missing aspects:
-  * Not portable
-  * Cannot handle allocations of arbitrary numbers of objects (this was left as an exercise)
-  * Not thread-safe
-  * Suffers from the static initialization problem
-# ['MicroC/OS-II: The Real-Time Kernel], by Jean J. Labrosse, Chapter 7 and Appendix B.04.
-  * An example of the Simple Segregated Storage scheme at work in the internals of an actual OS.
-  * Missing aspects: 
-	* Not portable (though this is OK, since it's part of its own OS)
-	* Cannot handle allocations of arbitrary numbers of blocks (which is also OK, since this feature is not needed)
-	* Requires non-intuitive user code to create and destroy the Pool
-# ['Efficient C++: Performance Programming Techniques], by Dov Bulka and David Mayhew, Chapters 6 and 7.
-	* This is a good example of iteratively developing a Pool solution;
-	* however, their premise (that the system-supplied allocation mechanism is hopelessly inefficient) is flawed on every system I've tested on.
-	* Run their timings on your system before you accept their conclusions.
-	* Missing aspect: Requires non-intuitive user code to create and destroy the Pool
-# ['Advanced C++: Programming Styles and Idioms], by James O. Coplien, Section 3.6.
-	* Has examples of both static and dynamic pooling, but missing aspects: 
-	* Not thread-safe
-	* The static pooling example is not portable
-
-[endsect] [/section:implementations Other Implementations]
 
 [section:alignment Guaranteeing Alignment - How we guarantee alignment portably.]
 
@@ -653,142 +754,6 @@ the contiguous allocation algorithm would have failed to find any of the contigu
 
 [endsect] [/section:alignment  Guaranteeing Alignment - How we guarantee alignment portably.]
 
-
-[section:interfaces Boost Pool Interfaces - What interfaces are provided and when to use each one.]
-
-[h4 Introduction]
-
-There are several interfaces provided which allow users great flexibility
-in how they want to use Pools. 
-Review the concepts document to get the basic understanding of how Pools work.
-
-[h3 Terminology and Tradeoffs]
-
-[h5 Object Usage vs. Singleton Usage]
-
-Object Usage is the method where each Pool is an object that may be created and destroyed.
-Destroying a Pool implicitly frees all chunks that have been allocated from it.
-
-Singleton Usage is the method where each Pool is an object with static duration;
-that is, it will not be destroyed until program exit.
-Pool objects with Singleton Usage may be shared;
-thus, Singleton Usage implies thread-safety as well.
-System memory allocated by Pool objects with Singleton Usage
-may be freed through release_memory or purge_memory.
-
-[h5 Out-of-Memory Conditions: Exceptions vs. Null Return]
-
-Some Pool interfaces throw exceptions when out-of-memory;
-others will return 0. In general, unless mandated by the Standard,
-Pool interfaces will always prefer to return 0 instead of throw an exception.
-
-[section:interfaces Pool Interfaces]
-
-[section:pool pool]
-
-The [@interfaces/pool.html pool interface]
-is a simple Object Usage interface with Null Return.
-
-Example:
-[pre 
-void func()
-{
-  boost::pool<> p(sizeof(int));
-  for (int i = 0; i < 10000; ++i)
-  {
-    int * const t = p.malloc();
-    ... // Do something with t; don't take the time to free() it
-  }
-} // on function exit, p is destroyed, and all malloc()'ed ints are implicitly freed
-
-]
-[endsect] [/section pool]
-
-
-[section:object_pool object_pool]
-
-The [@interfaces/object_pool.html object_pool interface]
-is an Object Usage interface with Null Return,
-but is aware of the type of the object for which it is allocating chunks.
-On destruction, any chunks that have been allocated
-from that object_pool will have their destructors called.
-
-Example:
-[pre 
-struct X { ... }; // has destructor with side-effects
-
-void func()
-{
-  boost::object_pool<X> p;
-  for (int i = 0; i < 10000; ++i)
-  {
-    X * const t = p.malloc();
-    ... // Do something with t; don't take the time to free() it
-  }
-} // on function exit, p is destroyed, and all destructors for the X objects are called
-]
-
-[endsect] [/section object_pool]
-
-[section:singleton_pool singleton_pool]
-
-The [@interfaces/singleton_pool.html singleton_pool interface]
-is a Singleton Usage interface with Null Return.
-It's just the same as the pool interface but with Singleton Usage instead.
-
-Example:
-[pre 
-struct MyPoolTag { };
-
-typedef boost::singleton_pool<MyPoolTag, sizeof(int)> my_pool;
-void func()
-{
-  for (int i = 0; i < 10000; ++i)
-  {
-    int * const t = my_pool::malloc();
-    ... // Do something with t; don't take the time to free() it
-  }
-  // Explicitly free all malloc()'ed int's
-  my_pool::purge_memory();
-}
-]
-[endsect] [/section singleton_pool]
-
-[section:pool_alloc pool_alloc]
-
-The [@interfaces/pool_alloc.html pool_alloc interface] is a Singleton Usage interface with Exceptions.
-It is built on the singleton_pool interface,
-and provides a Standard Allocator-compliant class (for use in containers, etc.).
-
-Example:
-[pre 
-void func()
-{
-  std::vector<int, boost::pool_allocator<int> > v;
-  for (int i = 0; i < 10000; ++i)
-    v.push_back(13);
-} // Exiting the function does NOT free the system memory allocated by the pool allocator
-  // You must call
-  //  boost::singleton_pool<boost::pool_allocator_tag, sizeof(int)>::release_memory()
-  // in order to force that
-
-]
-[endsect] [/section pool_alloc]
-
-[endsect] [/section:interfaces The Interfaces - pool, object_pool and singleton_pool]
-
-
-[h4 Future Directions]
-
-Another pool interface will be written: a base class for per-class pool allocation.
-This "pool_base" interface will be Singleton Usage with Exceptions,
-and built on the singleton_pool interface.
-
-[endsect] [/section:interfaces- What interfaces are provided and when to use each one.]
-
-
-[section:exposed Pool Exposed Interfaces ]
-
 [section:simple_segregated  Simple_segregated_storage  - Not for the faint of heart; embedded programmers only!]
 
 [h4 Introduction]
@@ -895,39 +860,9 @@ block is properly aligned for an array of void *] [] [] [Interleaves a free list
 [ [t.ordered_free_n(chunk, n, partition_sz)] [void] [same as above] [same as above] [t.add_ordered_block(chunk, n * partition_sz, partition_sz)] [Same as above, except it merges in the free list. Order-preserving. O(N + n) where N is the size of the free list.] ]
 ]
 
-[h4 Symbols]
-* boost::simple_segregated_storage
-
 [endsect] [/section:simple_segregated_storage]
 
-
-[endsect] [/section:exposed Pool Exposed Interfaces ]
-
-
-
-* [@interfaces/simple_segregated_storage.html interfaces/simple_segregated_storage.html] - Not for the faint of heart; embedded programmers only.
-* [@interfaces/pool.html interfaces/pool.html] - The basic pool interface.
-* [@interfaces/singleton_pool.html interfaces/singleton_pool.html] - The basic pool interface as a thread-safe singleton.
-* [@interfaces/object_pool.html interfaces/object_pool.html] - A type-oriented (instead of size-oriented) pool interface.
-* [@interfaces/pool_alloc.html interfaces/pool_alloc.html] - A Standard Allocator pool interface based on singleton_pool.
-* [@interfaces/user_allocator.html interfaces/user_allocator.html] - OK, not a pool interface, but it describes how the user can control how Pools allocate system memory.
-
-
-* Pool Implementation Details and Extensions 
-* Interface Implementations and Extensions 
-* [@implementation/simple_segregated_storage.html implementation/simple_segregated_storage.html]
-* [@implementation/pool.html implementation/pool.html]
-* [@implementation/singleton_pool.html implementation/singleton_pool.html]
-* [@implementation/object_pool.html implementation/object_pool.html]
-* [@implementation/pool_alloc.html implementation/pool_alloc.html]
-* Components Used Only by the Implementation 
-* [@implementation/ct_gcd_lcm.html implementation/ct_gcd_lcm.html] - Compile-time GCD and LCM.
-* [@implementation/for.html implementation/for.html] - Description of an m4 component.
-* [@implementation/gcd_lcm.html implementation/gcd_lcm.html] - Run-time GCD and LCM.
-* [@implementation/guard.html implementation/guard.html] - Auto lock/unlock for mutex.
-* [@implementation/mutex.html implementation/mutex.html] - Platform-dependent mutex type.
-* [@implementation/pool_construct.html implementation/pool_construct.html] - The system for supporting more constructor arguments in object_pool.
-* [@implementation/singleton.html implementation/singleton.html] - Singleton that avoids static initialization problem.
+[endsect] [/section:pooling Pool in more depth]
 
 [xinclude autodoc.xml] [/ Using Doxygen reference documentation.]
 
@@ -944,8 +879,17 @@ block is properly aligned for an array of void *] [] [] [Interleaves a free list
 [section [*Version 2.0.0, January 11, 2011] ['Documentation and testing revision]]
 [*Features:]
 
-* Converted documentation using Quickbook, Doxygen, for html and pdf,
+* Documentation converted by Paul A. Bristow using Quickbook, Doxygen, for html and pdf,
 based on Stephen Cleary's html version, Revised 05 December, 2006.
+
+This used Opera 11.0, and html_to_quickbook.css as a special display format.
+On the Opera full taskbar (chose to enable this) View, Style, Manage modes, Display
+
+choose to add \boost-sandbox\boost_docs\trunk\doc\style\html\conversion\html_to_quickbook.css
+
+to My Style Sheet.  Html pages are now displayed as Quickbook and can be copied and pasted
+into quickbook files using your favored text editor for Quickbook.
+
 
 [endsect] [/section [*Version 2.0.0, January 11, 2011] ['Documentation and testing revision]]
 
@@ -1003,14 +947,56 @@ Report and view bugs and features by adding a ticket at [@https://svn.boost.org/
 
 [endsect] [/section:tickets  Appendix G: Tickets]
 
-[/=====================================]
-[section:todo  Appendix H: Future plans]
-[/=====================================]
+[section:implementations  Appendix H: Other Implementations]
+
+Pool allocators are found in many programming languages, and in many variations.
+The beginnings of many implementations may be found in common programming literature;
+some of these are given below. Note that none of these are complete implementations of a Pool;
+most of these leave some aspects of a Pool as a user exercise. However, in each case,
+even though some aspects are missing, these examples use the same underlying concept
+of a Simple Segregated Storage described in this document.
+
+# ['The C++ Programming Language], 3rd ed., by Bjarne Stroustrup, Section 19.4.2. Missing aspects:
+  * Not portable
+  * Cannot handle allocations of arbitrary numbers of objects (this was left as an exercise)
+  * Not thread-safe
+  * Suffers from the static initialization problem
+# ['MicroC/OS-II: The Real-Time Kernel], by Jean J. Labrosse, Chapter 7 and Appendix B.04.
+  * An example of the Simple Segregated Storage scheme at work in the internals of an actual OS.
+  * Missing aspects: 
+	* Not portable (though this is OK, since it's part of its own OS)
+	* Cannot handle allocations of arbitrary numbers of blocks (which is also OK, since this feature is not needed)
+	* Requires non-intuitive user code to create and destroy the Pool
+# ['Efficient C++: Performance Programming Techniques], by Dov Bulka and David Mayhew, Chapters 6 and 7.
+	* This is a good example of iteratively developing a Pool solution;
+	* however, their premise (that the system-supplied allocation mechanism is hopelessly inefficient) is flawed on every system I've tested on.
+	* Run their timings on your system before you accept their conclusions.
+	* Missing aspect: Requires non-intuitive user code to create and destroy the Pool
+# ['Advanced C++: Programming Styles and Idioms], by James O. Coplien, Section 3.6.
+	* Has examples of both static and dynamic pooling, but missing aspects: 
+	* Not thread-safe
+	* The static pooling example is not portable
+
+
+[endsect] [/section:implementations  Appendix H: Other Implementations]
+
+[section:references  Appendix I: References]
+
+# [@ Doug Lea, A Memory Allocator.] See [@http://gee.cs.oswego.edu/dl/html/malloc.html http://gee.cs.oswego.edu/dl/html/malloc.html]
+# [@ Paul R. Wilson, Mark S. Johnstone, Michael Neely, and David Boles,
+['Dynamic Storage Allocation: A Survey and Critical Review]
+in International Workshop on Memory Management, September 1995, pg. 28, 36.]
+See [@ftp://ftp.cs.utexas.edu/pub/garbage/allocsrv.ps ftp://ftp.cs.utexas.edu/pub/garbage/allocsrv.ps]
+
+[endsect] [/section:references  Appendix I: references]
+
+[section:todo  Appendix J: Future plans]
 
 [heading For later releases]
 
 Another pool interface will be written: a base class for per-class pool allocation.
 
 [endsect] [/section:todo  Appendix H: Future plans]
+
 
 [endsect] [/section:appendices Appendices]
