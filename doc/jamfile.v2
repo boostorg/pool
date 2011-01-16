@@ -20,9 +20,9 @@ using quickbook ;
 doxygen autodoc
    :
       [ glob ../../../boost/pool/*.hpp ]
-      [ glob ../../../boost/pool/detail/*.hpp ]
-      #[ glob ../../../boost/pool/detail/*.inc ] #  These might better be named .ipp?
-      # The .inc are not recognised correctly by doxywizard leaving error message.
+      #[ glob ../../../boost/pool/detail/*.hpp ]
+      #[ glob ../../../boost/pool/detail/*.ipp ] 
+      # Renamed as .inc are not recognised correctly by doxywizard leaving error message.
       # Warning: include file boost/pool/detail/pool_construct.inc not found, perhaps you forgot to add its directory to INCLUDE_PATH?
       #  and problem with 'no type' in jamfile.
       # error: target { ../../../boost/pool/detail/pool_construct.inc. } has no type
@@ -40,6 +40,8 @@ doxygen autodoc
 			<doxygen:param>EXTRACT_PRIVATE=NO
 			<doxygen:param>EXPAND_ONLY_PREDEF=YES
 			<xsl:param>"boost.doxygen.reftitle=Boost.Pool Reference"
+			
+			
    ;
 
 xml pool : pool.qbk ;

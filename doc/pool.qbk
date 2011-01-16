@@ -1,6 +1,6 @@
 [/
  / Copyright (c) 2000 - 2006 Stephen Cleary
- / Copyright (c) 2011  Paul A. Bristow
+ / Copyright (c) 2011  Paul A. Bristow (conversion to Quickbook format)
  / Distributed under the Boost Software License, Version 1.0.
  / (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
  /]
@@ -34,9 +34,9 @@
 [def __requires [*Requires:]]
 
 [def __pool_interfaces [link boost_pool.pool.interfaces Pool Interfaces]]
+[def __pool_references [link boost_pool.pool.appendices.references References]]
 
 [def __todo [link boost_pool.appendices.todo TODO]]
-
 
 [template mu[]'''&#x3BC;'''] [/ µ Greek small letter mu]
 [template plusminus[]'''&#x00B1;'''] [/  ? plus or minus sign]
@@ -255,26 +255,18 @@ and you should be good to go!
 
 [section:testing Building the Test Programs]
 
-The subdirectory ['build] contains subdirectories for several different platforms.
-These subdirectories contain all necessary work-around code for that platform,
-as well as makefiles or IDE project files as appropriate.
+A jamfile.v2 is provided which can be run is the usual way, for example:
 
-Read the `readme.txt` in the proper subdirectory, if it exists.
-
-The standard makefile targets are ['all], ['clean] (which deletes any intermediate files),
-and ['veryclean] (which deletes any intermediate files and executables).
-All intermediate and executable files are built in the same directory as the makefile/project file.
-If there is a project file supplied instead of a makefile,
-['clean] and ['veryclean] shell scripts/batch files will be provided.
+[@boost:\libs\pool\test> bjam -a >pool_test.log]
 
 [endsect] [/section:testing Building the Test Programs]
 
-[section:pooling Pool in more depth]
+[section:pooling Pool in More Depth]
 
-[section:concepts  - Basic ideas behind pooling]
+[section:concepts Basic ideas behind pooling]
 
-[: ['Dynamic memory allocation has been a fundamental part
-of most computer systems since roughly 1960...] [@#ref1 1] ]
+['Dynamic memory allocation has been a fundamental part
+of most computer systems since roughly 1960...] __pool_references 1
 
 Everyone uses dynamic memory allocation.
 If you have ever called malloc or new, then you have used dynamic memory allocation.
@@ -306,72 +298,9 @@ Even when a chunk is malloc'ed out to a program, the memory manager
 must ['save] some information in it - usually just its size.
 Then, when the block is free'd, the memory manager can easily tell how large it is.
 
-[br] 
-[section:mbna Memory block, allocated (not by process)]
+[$/images/pc1.png]
 
-[/<caption>      <span class="emphasis"><em>Memory block, not allocated</em></span>    </caption>]
-
-'''
-<table cellspacing="0" border="3" rules="none" style="float: left; clear: both;" summary="Memory not used by process">
-    <tr>
-      <td style="background-color: white; text-align: center;">Memory block, not allocated</td>
-    </tr>
-
-    <tr>
-      <td style="background-color: red; text-align: center;">Memory not belonging to process</td>
-    </tr>
-
-    <tr>
-      <td style=
-      "padding: 1 0; background-color: silver; text-align: center;">
-      Memory used internally by memory allocator algorithm (usually 8-12 bytes)</td>
-    </tr>
-
-    <tr>
-      <td style=
-      "padding: 2 0; background-color: gray; text-align: center">Unused memory</td>
-    </tr>
-
-    <tr>
-      <td style="background-color: red; text-align: center;">Memory not belonging to process</td>
-    </tr>
-  </table>
-'''
-[endsect]
-[br]
-[/h4 Memory block, allocated (used by process)]
-[br]
-[section:mba Memory block, allocated (in use by process)]
-
-[/<caption>      <span class="emphasis"><em>Memory block, allocated (used by program)</em></span>    </caption>]
-
-'''
-  <table cellspacing="0" border="3" rules="none" style= "float: right; clear: both;" summary="Memory used by program">
-    <tr>
-      <td style="background-color: white; text-align: center;">Memory block, allocated (used by process)</td>
-    </tr>
-
-    <tr>
-      <td style="background-color: red; text-align: center;">Memory not belonging to process</td>
-    </tr>
-
-    <tr>
-      <td style="background-color: silver; text-align: center;">Memory used internally by memory allocator algorithm (usually 4 bytes)</td>
-    </tr>
-
-    <tr>
-      <td style=
-      "padding: 3 0; background-color: yellow; text-align: center">Memory usable by program</td>
-    </tr>
-
-    <tr>
-      <td style="background-color: red; text-align: center;">Memory not belonging to process</td>
-    </tr>
-  </table>
-'''
-[br]
-[br]
-[endsect] 
+[$/images/pc2.png]
 
 [h5 Dynamic memory allocation is often inefficient]
 
@@ -405,7 +334,7 @@ in a small amount of (amortized) constant time.
 However, this is done at the loss of generality;
 simple segregated storage only can allocate memory chunks of a single size.
 
-[endsect] [/section:concepts  - Basic ideas behind pooling]
+[endsect] [/section:concepts Basic ideas behind pooling]
 
 [section:simple Simple Segregated Storage]
 
@@ -416,14 +345,8 @@ It begins by partitioning a memory block into fixed-size chunks.
 Where the block comes from is not important until implementation time.
 A Pool is some object that uses Simple Segregated Storage in this fashion.
 To illustrate:
-[table:mb1 Memory block, split into chunks
-[ [Memory not belonging to process] ]
-[ [Chunk 0] ]
-[ [Chunk 1] ]
-[ [Chunk 2] ]
-[ [Chunk 3] ]
-[ [Memory not belonging to process] ]
-]
+
+[$/images/pc3.png]
 
 Each of the chunks in any given block are always the same size.
 This is the fundamental restriction of Simple Segregated Storage:
@@ -435,22 +358,7 @@ or a Pool of characters for an integer
 Simple Segregated Storage works by interleaving a free list within the unused chunks.
 For example:
 
-[table:mb2 Memory block, with no chunks allocated
-[ [Memory not belonging to process] ]
-[ [Chunk 0; points to Chunk 1] ]
-[ [Chunk 1; points to Chunk 2] ]
-[ [Chunk 2; points to Chunk 3] ]
-[ [Chunk 3; end-of-list] ]
-[ [Memory not belonging to process] ]
-]
-[table:mb3 Memory block, with two chunks allocated
-[ [Memory not belonging to process] ]
-[ [Chunk 0; points to Chunk 2] ]
-[ [Chunk 1 (in use by process)] ]
-[ [Chunk 2; end-of-list] ]
-[ [Chunk 3 (in use by process)] ]
-[ [Memory not belonging to process] ]
-]
+[$/images/pc4.png]
 
 By interleaving the free list inside the chunks,
 each Simple Segregated Storage only has the overhead of a single pointer
@@ -463,6 +371,8 @@ a O(1) operation. In the case where the free list is empty,
 another block may have to be acquired and partitioned, which would result in an amortized O(1) time.
 Memory deallocation may be as simple as adding that chunk to the front of the free list, a O(1) operation.
 However, more complicated uses of Simple Segregated Storage may require a sorted free list, which makes deallocation O(N).
+
+[$/images/pc5.png]
 
 Simple Segregated Storage gives faster execution and less memory overhead
 than a system-supplied allocator, but at the loss of generality.
@@ -607,94 +517,20 @@ and the size of the third section is `sizeof(size_type)`.
 
 Here's an example memory block, where `requested_size == sizeof(void *) == sizeof(size_type) == 4`:
 
-[table:mb41 Memory block containing 4 chunks, showing overlying array structures; FLP = Interleaved Free List Pointer
-[ [Sections] [size_type alignment] [void * alignment] [requested_size alignment] ]
-[ [ Memory not belonging to process] ]
-[ [ Chunks section (16 bytes)] [(4 bytes)] [FLP for Chunk 1 (4 bytes)] [Chunk 1 (4 bytes)] ]
-[ [(4 bytes)] [FLP for Chunk 2 (4 bytes)] [Chunk 2 (4 bytes)] ]
-[ [(4 bytes)] [FLP for Chunk 3 (4 bytes)] [Chunk 3 (4 bytes)] ]
-[ [(4 bytes)] [FLP for Chunk 4 (4 bytes)] [Chunk 4 (4 bytes)] ]
-[ [Pointer to next Block (4 bytes)] [(4 bytes)] [Pointer to next Block (4 bytes)] ]
-[ [Size of next Block (4 bytes)] [Size of next Block (4 bytes)] ]
-[ [ Memory not belonging to process] ]
-]
+[$/images/mb1.png] 
 
 To show a visual example of possible padding,
 here's an example memory block where 
 requested_size == 8 and sizeof(void *) == sizeof(size_type) == 4:
 
-[table:mb4r  Memory block containing 4 chunks, showing overlying array structures; FLP = Interleaved Free List Pointer
-[ [Sections] [size_type alignment] [void * alignment] [requested_size alignment] ]
-[ [ Memory not belonging to process] ]
-[ [ Chunks section (32 bytes)] [(4 bytes)] [FLP for Chunk 1 (4 bytes)] [ Chunk 1 (8 bytes)] ]
-[ [(4 bytes)] [(4 bytes)] ]
-[ [(4 bytes)] [FLP for Chunk 2 (4 bytes)] [ Chunk 2 (8 bytes)] ]
-[ [(4 bytes)] [(4 bytes)] ]
-[ [(4 bytes)] [FLP for Chunk 3 (4 bytes)] [ Chunk 3 (8 bytes)] ]
-[ [(4 bytes)] [(4 bytes)] ]
-[ [(4 bytes)] [FLP for Chunk 4 (4 bytes)] [ Chunk 4 (8 bytes)] ]
-[ [(4 bytes)] [(4 bytes)] ]
-[ [Pointer to next Block (4 bytes)] [(4 bytes)] [Pointer to next Block (4 bytes)] ]
-[ [Size of next Block (4 bytes)] [Size of next Block (4 bytes)] ]
-[ [ Memory not belonging to process] ]
-]
+[$/images/mb2.png] 
 
 Finally, here is a convoluted example where the requested_size is 7,
 `sizeof(void *) == 3, and sizeof(size_type) == 5`,
 showing how the least common multiple guarantees alignment requirements
 even in the oddest of circumstances:
 
-[table:mb22  Memory block containing 2 chunks, showing overlying array structures
-[ [Sections] [size_type alignment] [void * alignment] [requested_size alignment] ]
-[ [ Memory not belonging to process ] ]
-[ [ Chunks section (210 bytes)] [(5 bytes)] [ Interleaved free list pointer for Chunk 1 (15 bytes; 3 used)] [ Chunk 1 (105 bytes; 7 used)] ]
-[ [(5 bytes)] ]
-[ [(5 bytes)] ]
-[ [(5 bytes)] [ (15 bytes)] ]
-[ [(5 bytes)] ]
-[ [(5 bytes)] ]
-[ [(5 bytes)] [(15 bytes)] ]
-[ [(5 bytes)] ]
-[ [(5 bytes)] ]
-[ [(5 bytes)] [ (15 bytes)] ]
-[ [(5 bytes)] ]
-[ [(5 bytes)] ]
-[ [(5 bytes)] [(15 bytes)] ]
-[ [(5 bytes)] ]
-[ [(5 bytes)] ]
-[ [(5 bytes)] [ (15 bytes)] ]
-[ [(5 bytes)] ]
-[ [(5 bytes)] ]
-[ [(5 bytes)] [(15 bytes)] ]
-[ [(5 bytes)] ]
-[ [(5 bytes)] ]
-[ [(5 bytes)] [ Interleaved free list pointer for Chunk 2 (15 bytes; 3 used)] [ Chunk 2 (105 bytes; 7 used)] ]
-[ [(5 bytes)] ]
-[ [(5 bytes)] ]
-[ [(5 bytes)] [(15 bytes)] ]
-[ [(5 bytes)] ]
-[ [(5 bytes)] ]
-[ [(5 bytes)] [ (15 bytes)] ]
-[ [(5 bytes)] ]
-[ [(5 bytes)] ]
-[ [(5 bytes)] [(15 bytes)] ]
-[ [(5 bytes)] ]
-[ [(5 bytes)] ]
-[ [(5 bytes)] [ (15 bytes)] ]
-[ [(5 bytes)] ]
-[ [(5 bytes)] ]
-[ [(5 bytes)] [(15 bytes)] ]
-[ [(5 bytes)] ]
-[ [(5 bytes)] ]
-[ [(5 bytes)] [ (15 bytes)] ]
-[ [(5 bytes)] ]
-[ [(5 bytes) ] ]
-[ [ Pointer to next Block (15 bytes; 3 used)] [(5 bytes)] [ Pointer to next Block (15 bytes; 3 used)] ]
-[ [(5 bytes)] ]
-[ [(5 bytes) ] ]
-[ [Size of next Block (5 bytes; 5 used)] [Size of next Block (5 bytes; 5 used)] ]
-[ [ Memory not belonging to process] ]
-]
+[$/images/mb3.png] 
 
 [section:chunks How Contiguous Chunks are Handled]
 
@@ -714,29 +550,8 @@ To illustrate:
 Here's an example memory block,
 where `requested_size == 1` and `sizeof(void *) == sizeof(size_type) == 4`:
 
-[table: mb4c1 Memory block containing 4 chunks; requested_size is 1
-[ [Sections] [size_type alignment] [void * alignment] [requested_size alignment] ]
-[ [ Memory not belonging to process] ]
-[ [ Chunks section (16 bytes)] [(4 bytes)] [FLP to Chunk 2 (4 bytes)] [Chunk 1 (4 bytes)] ]
-[ [(4 bytes)] [FLP to Chunk 3 (4 bytes)] [Chunk 2 (4 bytes)] ]
-[ [(4 bytes)] [FLP to Chunk 4 (4 bytes)] [Chunk 3 (4 bytes)] ]
-[ [(4 bytes)] [FLP to end-of-list (4 bytes)] [Chunk 4 (4 bytes)] ]
-[ [Pointer to next Block (4 bytes)] [(4 bytes)] [Ptr to end-of-list (4 bytes)] ]
-[ [Size of next Block (4 bytes)] [0 (4 bytes)] ]
-[ [ Memory not belonging to process] ]
-]
 
-[table:mb7 After user requests 7 contiguous elements of requested_size
-[ [Sections] [size_type alignment] [void * alignment] [requested_size alignment] ]
-[ [ Memory not belonging to process] ]
-[ [ Chunks section (16 bytes)] [(4 bytes)] [(4 bytes)] [4 bytes in use by program] ]
-[ [(4 bytes)] [(4 bytes)] [3 bytes in use by program (1 byte unused)] ]
-[ [(4 bytes)] [FLP to Chunk 4 (4 bytes)] [Chunk 3 (4 bytes)] ]
-[ [(4 bytes)] [FLP to end-of-list (4 bytes)] [Chunk 4 (4 bytes)] ]
-[ [Pointer to next Block (4 bytes)] [(4 bytes)] [Ptr to end-of-list (4 bytes)] ]
-[ [Size of next Block (4 bytes)] [0 (4 bytes)] ]
-[ [ Memory not belonging to process] ]
-]
+[$/images/mb4.png] 
 
 Then, when the user deallocates the contiguous memory,
 we can split it up into chunks again.
