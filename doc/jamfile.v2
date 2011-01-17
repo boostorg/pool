@@ -7,11 +7,30 @@
 #
 #  See http://www.boost.org for updates, documentation, and revision history.
 
-path-constant nav-images :  html/images/ ; # png and svg images for home, next, note, tip...
-path-constant images_location : html/images/ ; # location of SVG images referenced by Quickbook.
+path-constant nav_images :  html/images/ ; # png and svg images for home, next, note, tip...
+#path-constant images_location : html/images/ ; # location of SVG and PNG images referenced by Quickbook.
+path-constant images_location : html ; # location of SVG and PNG images referenced by Quickbook.
 
 echo "images_location" $(images_location) ;
-echo "nav-images" $(nav-images) ;
+echo "nav-images" $(nav_images) ;
+
+import modules ;
+
+if --enable-index in  [ modules.peek : ARGV ]
+{
+   ECHO "Building the Pool docs with automatic index generation enabled." ;
+   using auto-index ;
+   project : requirements
+        <auto-index>on <format>pdf:<auto-index-internal>off
+        <format>html:<auto-index-internal>on
+        <auto-index-script>index.idx
+        <auto-index-prefix>../../../.. 
+        <quickbook-define>enable_index ;
+}
+else
+{
+   ECHO "Building the Pool docs with automatic index generation disabled. To get an auto-index, try building with --enable-index." ;
+}
 
 using doxygen ;  # Required if you want to use Doxygen.
 using quickbook ;
@@ -40,8 +59,6 @@ doxygen autodoc
 			<doxygen:param>EXTRACT_PRIVATE=NO
 			<doxygen:param>EXPAND_ONLY_PREDEF=YES
 			<xsl:param>"boost.doxygen.reftitle=Boost.Pool Reference"
-			
-			
    ;
 
 xml pool : pool.qbk ;
@@ -53,7 +70,7 @@ boostbook standalone
    
    # General settings
    # =================
-   
+    # Path for links to Boost. 
 		<xsl:param>boost.root=../../../../..
 		# Path for libraries index:
 		<xsl:param>boost.libraries=../../../../../libs/libraries.htm
@@ -65,11 +82,23 @@ boostbook standalone
 		# defining creates a runtime error: Global parameter nav.layout already defined
 		<xsl:param>nav.layout=horizontal # to get a horizontal navigation bar (you probably DO want this).
 
+		# Path for links to Boost logo.
 		#<xsl:param>boost.root=.. # already defined
 		<xsl:param>boost.image=Boost # options are: none (no logo), Boost (for boost.png), or your own logo, for example, inspired_by_boost.png
 		<xsl:param>boost.image.src=./images/boost.png #
 		<xsl:param>boost.image.w=180 # Width of logo in pixels. (JM has W = 162, h = 46)
     <xsl:param>boost.image.h=90 # Height of logo in pixels.
+  
+  	# Options for html and pdf
+  	# ========================
+		# No indent on body text:
+		<xsl:param>body.start.indent=0pt
+		# Margin size:
+		<xsl:param>page.margin.inner=0.5in
+		# Margin size:
+		<xsl:param>page.margin.outer=0.5in
+		# Yes, we want graphics for admonishments:
+		<xsl:param>admon.graphics=1
   
 		# HTML options:
 		# =============
@@ -85,7 +114,11 @@ boostbook standalone
 		<xsl:param>toc.max.depth=2
 		# How far down we go with TOC's
 		<xsl:param>generate.section.toc.level=10
-		# Path for links to Boost:
+		# Horizontal ? spacing in table cells.
+		<format>html:<xsl:param>html.cellspacing=3 # pixels
+		# Vertical spacing in table cells.
+		<format>html:<xsl:param>html.cellpadding=5 # pixels
+		#  Not sure if these are right way round?		
 
 		# PDF Options:
 		# ============
@@ -106,8 +139,13 @@ boostbook standalone
 		# Set this one for PDF generation *only*:
 		# default png graphics are awful in PDF form,
 		# better use SVG instead:
-		<format>pdf:<xsl:param>admon.graphics.extension=".svg"
-		<format>pdf:<xsl:param>admon.graphics.path=$(boost-images)/
+		#<format>pdf:<xsl:param>admon.graphics.extension=".svg"
+		<format>pdf:<xsl:param>admon.graphics.extension=".png" 
+		<format>pdf:<xsl:param>admon.graphics.path=$(nav_images)/ # next, prev, note, tip ... for pdf.
+		<format>pdf:<xsl:param>use.role.for.mediaobject=1 
+		<format>pdf:<xsl:param>preferred.mediaobject.role=print
+	  <format>pdf:<xsl:param>img.src.path=$(images_location)/ # graphics (diagrams) for pdf.
+		<format>pdf:<xsl:param>draft.mode="no"
 		
 		<dependency>autodoc #
 
