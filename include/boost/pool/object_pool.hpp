@@ -8,6 +8,39 @@
 
 #ifndef BOOST_OBJECT_POOL_HPP
 #define BOOST_OBJECT_POOL_HPP
+/*!
+\file
+\brief  provides a template type that can be used for fast and efficient memory allocation.
+It also provides automatic destruction of non-deallocated objects.\n
+For information on other pool-based interfaces, see the other pool interfaces.
+
+UserAllocator\n
+Defines the allocator that the underlying Pool will use to allocate memory from the system.
+See User Allocators for details.
+
+\details
+
+(&t)->~ObjectPool()	Destructs the ObjectPool.\n
+~ElementType() is called for each allocated ElementType that has not been deallocated. O(N).\n\n
+
+Extensions to Public Interface\n
+
+Whenever an object of type ObjectPool needs memory from the system,
+it will request it from its UserAllocator template parameter.
+The amount requested is determined using a doubling algorithm;
+that is, each time more system memory is allocated,
+the amount of system memory requested is doubled.
+Users may control the doubling algorithm by using the following extensions.\n
+
+Additional constructor parameter\n
+
+Users may pass an additional constructor parameter to ObjectPool.
+This parameter is of type size_type, and is the number of chunks
+to request from the system the first time that
+object needs to allocate system memory.
+The default is 32. This parameter may not be 0.\n
+
+*/
 
 #include <boost/pool/poolfwd.hpp>
 
@@ -33,15 +66,17 @@
 
 namespace boost {
 
-// T must have a non-throwing destructor
+/*! \tparam T type of object to allocate/deallocate.
+    \pre T must have a non-throwing destructor.
+*/
 template <typename T, typename UserAllocator>
 class object_pool: protected pool<UserAllocator>
-{
+{ //!
   public:
-    typedef T element_type;
-    typedef UserAllocator user_allocator;
-    typedef typename pool<UserAllocator>::size_type size_type;
-    typedef typename pool<UserAllocator>::difference_type difference_type;
+    typedef T element_type; //!< ElementType
+    typedef UserAllocator user_allocator; //!<
+    typedef typename pool<UserAllocator>::size_type size_type; //!< 	pool<UserAllocator>::size_type
+    typedef typename pool<UserAllocator>::difference_type difference_type; //!< pool<UserAllocator>::difference_type
 
   protected:
     pool<UserAllocator> & store() { return *this; }
@@ -49,24 +84,47 @@ class object_pool: protected pool<UserAllocator>
 
     // for the sake of code readability :)
     static void * & nextof(void * const ptr)
-    { return *(static_cast<void **>(ptr)); }
+    { //! \returns dereferenced ptr (for the sake of code readability :)
+			return *(static_cast<void **>(ptr));
+		}
 
   public:
     explicit object_pool(const size_type next_size = 32, const size_type max_size = 0)
-    :pool<UserAllocator>(sizeof(T), next_size, max_size) { }
+    :
+    pool<UserAllocator>(sizeof(T), next_size, max_size)
+    { //! Constructs a new (empty by default) ObjectPool.
+      //! \param next_size number of chunks to request from the system the next time that object needs to allocate system memory (default 32).
+      //! \pre next_size != 0.
+      //! \param max_size maximum size of block.
+		}
 
     ~object_pool();
 
-    // Returns 0 if out-of-memory
+    // Returns 0 if out-of-memory.
     element_type * malloc BOOST_PREVENT_MACRO_SUBSTITUTION()
-    { return static_cast<element_type *>(store().ordered_malloc()); }
+    { //! Allocates memory that can hold one object of type ElementType.
+      //! If out of memory, returns 0. Amortized O(1).
+			return static_cast<element_type *>(store().ordered_malloc());
+		}
     void free BOOST_PREVENT_MACRO_SUBSTITUTION(element_type * const chunk)
-    { store().ordered_free(chunk); }
+    { //! De-Allocates memory that holds a chunk of type ElementType.
+      //!  Note that p may not be 0.\n
+      //! Note that the destructor for p is not called. O(N).
+			store().ordered_free(chunk);
+		}
     bool is_from(element_type * const chunk) const
-    { return store().is_from(chunk); }
+    { /*! \returns true  if p was allocated from u or
+      may be returned as the result of a future allocation from u.
+      Returns false if p was allocated from some other pool or
+      may be returned as the result of a future allocation from some other pool.
+      Otherwise, the return value is meaningless.
+      Note that this function may not be used to reliably test random pointer values!
+    */
+			return store().is_from(chunk);
+		}
 
     element_type * construct()
-    {
+    { //! Constructs a new
       element_type * const ret = (malloc)();
       if (ret == 0)
         return ret;
@@ -82,7 +140,9 @@ class object_pool: protected pool<UserAllocator>
 // Warning: include file boost/pool/detail/pool_construct.ipp
 // not found, perhaps you forgot to add its directory to INCLUDE_PATH?
 // But the file IS found and referenced OK, but cannot view code.
-// Is this because not at the head of the file, or ?
+// This seems because not at the head of the file
+// But if moved this up, Doxygen is happy, but of course it won't compile,
+// because the many constructors *must* go here.
 
 #ifndef BOOST_NO_TEMPLATE_CV_REF_OVERLOADS
 #   include <boost/pool/detail/pool_construct.ipp>
@@ -91,7 +151,8 @@ class object_pool: protected pool<UserAllocator>
 #endif
 
     void destroy(element_type * const chunk)
-    {
+    { //! destroy a chunk. (== p->~ElementType(); t.free(p);)
+      //! \pre p must have been previously allocated from t.
       chunk->~T();
       (free)(chunk);
     }
