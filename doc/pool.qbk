@@ -993,6 +993,14 @@ block is properly aligned for an array of void *] [] [] [Interleaves a free list
 
 [xinclude autodoc.xml] [/ Using Doxygen reference documentation.]
 
+[/Note that there will be always some warnings about the .ipp files in Doxygen warnings and Autodoxywarnings.log files. 
+"Warning: include file boost/pool/detail/pool_construct.ipp not found, perhaps you forgot to add its directory to INCLUDE_PATH?"
+This is unavoidable because these must be included in the middle of the class declaration.
+All the automatically generated constructors are documented in the Doxygen standalone version:
+only the access to source files is missing.
+The current Quickbook version does not deal with the /details directory so the problem does not arise
+- unless the details files are included in future.]
+
 [endsect] [/section:pool Boost Pool Library]
 
 [section:appendices Appendices]
@@ -1125,7 +1133,36 @@ Another pool interface will be written: a base class for per-class pool allocati
 This "pool_base" interface will be Singleton Usage with Exceptions,
 and built on the singleton_pool interface.
 
+Many functions need better Doxygen comments about their function.  (rebind in particular is undocumented).
+
+These comments appear in the reference section.
+
 [endsect] [/section:todo  Appendix J: Future plans]
 
-
 [endsect] [/section:appendices Appendices]
+
+[section:indexes Indexes]
+
+[? enable_index
+'''
+  <index type="function_name">
+  <title>Function Index</title>
+  </index>
+  <index type="class_name">
+  <title>Class Index</title>
+  </index>
+  <index type="typedef_name">
+  <title>Typedef Index</title>
+  </index>
+'''
+]
+
+[/ BOOST_PREVENT_MACRO_SUBSTITUTION is the only macro and not sure if useful?
+  but after removing still get BOOST_PREVENT_MACRO_SUBSTITUTION in the function index.
+	<index type="macro_name">
+	<title>Macro Index</title>
+	</index>
+	<index/>
+]
+
+[endsect] [/section:indexes Indexes]
