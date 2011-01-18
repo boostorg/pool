@@ -50,11 +50,16 @@
 
 [template graphic[name]  '''<inlinemediaobject>
 <imageobject role="html">
-<imagedata align="center" fileref="/images/'''[name]'''.png"></imagedata>
+<imagedata align="center" fileref="./images/'''[name]'''.png"></imagedata>
 </imageobject>
 <imageobject role="print">
+<imagedata align="center" fileref="./images/'''[name]'''.svg"></imagedata>
+</imageobject>
+
+<imageobject role="pdf">
 <imagedata align="center" fileref="/images/'''[name]'''.svg"></imagedata>
 </imageobject>
+
 </inlinemediaobject>''']
 
 [section:pool Boost Pool Library]
@@ -539,12 +544,6 @@ void func()
 [endsect] [/section pool_alloc]
 
 [endsect] [/section:interfaces The Interfaces - pool, object_pool and singleton_pool]
-
-[h4 Future Directions]
-
-Another pool interface will be written: a base class for per-class pool allocation.
-This "pool_base" interface will be Singleton Usage with Exceptions,
-and built on the singleton_pool interface.
 
 [endsect] [/section:interfaces- What interfaces are provided and when to use each one.]
 
@@ -1121,11 +1120,12 @@ See [@ftp://ftp.cs.utexas.edu/pub/garbage/allocsrv.ps ftp://ftp.cs.utexas.edu/pu
 
 [section:todo  Appendix J: Future plans]
 
-[heading For later releases]
-
 Another pool interface will be written: a base class for per-class pool allocation.
 
-[endsect] [/section:todo  Appendix H: Future plans]
+This "pool_base" interface will be Singleton Usage with Exceptions,
+and built on the singleton_pool interface.
+
+[endsect] [/section:todo  Appendix J: Future plans]
 
 
 [endsect] [/section:appendices Appendices]
