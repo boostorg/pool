@@ -21,10 +21,18 @@ if --enable-index in  [ modules.peek : ARGV ]
    ECHO "Building the Pool docs with automatic index generation enabled." ;
    using auto-index ;
    project : requirements
-        <auto-index>on <format>pdf:<auto-index-internal>off
-        <format>html:<auto-index-internal>on
-        <auto-index-script>index.idx
-        <auto-index-prefix>../../../.. 
+        <auto-index>on # Turns on index (or off).
+        
+        # Choose indexing method:
+        <format>html:<auto-index-internal>on  # on (or off) to use internally generated indexes.
+        # <format>html:<xsl:param>generate.index=0 # Don't let the XSL stylesheets generate indexes.
+        
+        <format>pdf:<auto-index-internal>on # on (or off) to use internally generated indexes.
+        # <auto-index-type>index  # Use <index>...</index> as the XML wrapper.
+
+        <auto-index-script>index.idx # Specifies the name of the script to load. 
+        # <auto-index-prefix>../../../.. used by math
+        <auto-index-prefix>../../../ 
         <quickbook-define>enable_index ;
 }
 else
@@ -34,7 +42,7 @@ else
 
 using doxygen ;  # Required if you want to use Doxygen.
 using quickbook ;
-#using auto-index ; # Required if you want to use autoindexing.
+# using auto-index ; # Required if you want to use autoindexing (see above).
 
 doxygen autodoc
    :
@@ -146,9 +154,10 @@ boostbook standalone
 		<format>pdf:<xsl:param>preferred.mediaobject.role=print
 	  <format>pdf:<xsl:param>img.src.path=$(images_location)/ # graphics (diagrams) for pdf.
 		<format>pdf:<xsl:param>draft.mode="no"
+		<format>pdf:<xsl:param>boost.url.prefix=I:/boost-sandbox/guild/pool/libs/pool/doc/html
 		
 		<dependency>autodoc #
 
    ;
 
-install pdf-install : standalone : <location>. <install-type>PDF ; # copy pdf to same location as .qbk
+install pdf-install : standalone : <location>. <install-type>PDF ; # copy pdf to libs/pool/doc, same location as .qbk .
