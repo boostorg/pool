@@ -9,6 +9,12 @@
 #ifndef BOOST_POOLFWD_HPP
 #define BOOST_POOLFWD_HPP
 
+/*!
+  \file
+  \brief Forward declarations of all public (non-implemention) classes.
+*/
+
+
 #include <boost/config.hpp> // for workarounds
 
 // std::size_t
