@@ -9,14 +9,18 @@
 #ifndef BOOST_POOL_GCD_LCM_HPP
 #define BOOST_POOL_GCD_LCM_HPP
 
+/*!
+  \file
+  \brief GCD and LCM two generic integer algorithms: greatest common divisor and least common multiple..
+*/
+
 namespace boost {
 
 namespace details {
 namespace pool {
 
-// Greatest common divisor and least common multiple
+// Greatest common divisor and least common multiple.
 
-//
 // gcd is an algorithm that calculates the greatest common divisor of two
 //  integers, using Euclid's algorithm.
 //
@@ -24,7 +28,10 @@ namespace pool {
 // Recommended: A > B
 template <typename Integer>
 Integer gcd(Integer A, Integer B)
-{
+{ //! algorithm that calculates the greatest common divisor of two
+  //!  integers, using Euclid's algorithm.
+  //! For faster results, ensure A > B.
+  //! \pre A != 0 && B != 0.
   do
   {
     const Integer tmp(B);
@@ -36,14 +43,15 @@ Integer gcd(Integer A, Integer B)
 }
 
 //
-// lcm is an algorithm that calculates the least common multiple of two
-//  integers.
+// lcm is an algorithm that calculates the least common multiple of two integers.
 //
 // Pre: A > 0 && B > 0
 // Recommended: A > B
 template <typename Integer>
 Integer lcm(const Integer & A, const Integer & B)
-{
+{ //! Algorithm that calculates the least common multiple of two integers.
+  //! For faster results, ensure A > B.
+  //! \pre A != 0 && B != 0.
   Integer ret = A;
   ret /= gcd(A, B);
   ret *= B;
