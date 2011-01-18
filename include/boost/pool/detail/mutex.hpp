@@ -11,9 +11,31 @@
 
 #include <boost/config.hpp>  // for workarounds
 
-// Extremely Light-Weight wrapper classes for OS thread synchronization
+/*!
+\file
+\brief Extremely Light-Weight wrapper classes for OS thread synchronization.
+\details detail/mutex.hpp provides several mutex types that provide a
+consistent interface for OS-supplied mutex types.
+These are all thread-level mutexes; interprocess mutexes are not supported.
 
-// Configuration: for now, we just choose between pthread or Win32 mutexes or none
+Configuration\n
+This header file will try to guess what kind of system it is on.
+It will auto-configure itself for Win32 or POSIX+pthread systems.
+To stub out all mutex code, bypassing the auto-configuration,
+define BOOST_NO_MT before any inclusion of this header.
+To prevent ODR violations, this should be defined
+in every translation unit in your project, including any library files.
+
+Note:
+Each mutex is always either owned or unowned.
+If owned, then it is owned by a particular thread.
+To "lock" a mutex means to wait until the mutex is unowned,
+and then make it owned by the current thread.
+To "unlock" a mutex means to release ownership from the current thread
+(note that the current thread must own the mutex to release that ownership!).
+As a special case, the null_mutex never waits.
+*/
+// Configuration: for now, we just choose between pthread or Win32 mutexes or none.
 
 #define BOOST_MUTEX_HELPER_NONE         0
 #define BOOST_MUTEX_HELPER_WIN32        1
