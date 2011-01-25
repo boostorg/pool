@@ -11,8 +11,8 @@ path-constant nav_images :  html/images/ ; # png and svg images for home, next, 
 #path-constant images_location : html/images/ ; # location of SVG and PNG images referenced by Quickbook.
 path-constant images_location : html ; # location of SVG and PNG images referenced by Quickbook.
 
-echo "images_location" $(images_location) ;
-echo "nav-images" $(nav_images) ;
+echo "images_location" $(images_location) ; # \guild\pool\libs\pool\doc\html
+echo "nav_images" $(nav_images) ; # \guild\pool\libs\pool\doc\html\images
 
 import modules ;
 
@@ -23,16 +23,20 @@ if --enable-index in  [ modules.peek : ARGV ]
    project : requirements
         <auto-index>on # Turns on index (or off).
         
-        # Choose indexing method:
+        # Choose indexing method (separately for html and pdf):
         <format>html:<auto-index-internal>on  # on (or off) to use internally generated indexes.
         # <format>html:<xsl:param>generate.index=0 # Don't let the XSL stylesheets generate indexes.
         
-        <format>pdf:<auto-index-internal>on # on (or off) to use internally generated indexes.
+        <format>pdf:<auto-index-internal>off # on (or off) to use internally generated indexes.
         # <auto-index-type>index  # Use <index>...</index> as the XML wrapper.
+        
+        <format>pdf:<xsl:param>index.on.type=1 # For the native stylesheets to generate the different indexes.
+        # PDF native index support is probably better for PDFs as then you actually get page numbers.
 
         <auto-index-script>index.idx # Specifies the name of the script to load. 
         # <auto-index-prefix>../../../.. used by math
-        <auto-index-prefix>../../../ 
+        # <auto-index-prefix>../../../ # OK
+        <auto-index-prefix>../../.. 
         <quickbook-define>enable_index ;
 }
 else
@@ -142,13 +146,15 @@ boostbook standalone
 		<xsl:param>page.margin.inner=0.5in
 		# Margin size:
 		<xsl:param>page.margin.outer=0.5in
+		
 		# Yes, we want graphics for admonishments:
 		<xsl:param>admon.graphics=1
-		# Set this one for PDF generation *only*:
+		
+		# Set these one for PDF generation *only*:
 		# default png graphics are awful in PDF form,
 		# better use SVG instead:
 		#<format>pdf:<xsl:param>admon.graphics.extension=".svg"
-		<format>pdf:<xsl:param>admon.graphics.extension=".png" 
+		<format>pdf:<xsl:param>admon.graphics.extension=".png" # Only png images are available.
 		<format>pdf:<xsl:param>admon.graphics.path=$(nav_images)/ # next, prev, note, tip ... for pdf.
 		<format>pdf:<xsl:param>use.role.for.mediaobject=1 
 		<format>pdf:<xsl:param>preferred.mediaobject.role=print
@@ -160,4 +166,13 @@ boostbook standalone
 
    ;
 
-install pdf-install : standalone : <location>. <install-type>PDF ; # copy pdf to libs/pool/doc, same location as .qbk .
+#install pdf-install : standalone : <location>. <install-type>PDF ; # copy pdf to libs/pool/doc, . means same location as .qbk = /doc .
+# for pdf moves pool.modified.pdf instead.
+
+# install pdf-install : standalone : <install-type>PDF <location>.<name>math.pdf ;
+
+#install pdf-install : standalone : <location>.<name>math.pdf <install-type>PDF ;
+#install pdf-install : standalone : <install-type>PDF <location>. <name>type_traits.pdf ;
+install pdf-install : standalone : <install-type>PDF <location>. <name>pool.pdf ;
+
+# copy pdf to libs/pool/doc, same location as .qbk .
