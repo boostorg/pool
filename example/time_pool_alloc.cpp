@@ -445,4 +445,76 @@ int main(int argc, char * argv[])
   return 0;
 }
 
+/*  
+
+Ouptut:
+
+------ Rebuild All started: Project: alloc_example, Configuration: Release Win32 ------
+  time_pool_alloc.cpp
+     Creating library J:\Cpp\pool\pool\Release\alloc_example.lib and object J:\Cpp\pool\pool\Release\alloc_example.exp
+  Generating code
+  Finished generating code
+  alloc_example.vcxproj -> J:\Cpp\pool\pool\Release\alloc_example.exe
+  Test 0: Insertion & deletion of 700000 ints in a vector:
+    std::allocator: 0.006 seconds
+    malloc/free:    0.007 seconds
+    new/delete:     0.008 seconds
+    Pool Alloc:     0.042 seconds
+    Pool /w Sync:   0.034 seconds
+    Pool:           not possible
+  Test 1: Insertion & deletion of 700000 ints in a set:
+    std::allocator: 0.063 seconds
+    malloc/free:    0.065 seconds
+    new/delete:     0.064 seconds
+    Pool Alloc:     0.01 seconds
+    Pool /w Sync:   0.01 seconds
+    Pool:           not possible
+  Test 2: Insertion & deletion of 700000 ints in a list:
+    std::allocator: 0.079 seconds
+    malloc/free:    0.074 seconds
+    new/delete:     0.075 seconds
+    Pool Alloc:     0.013 seconds
+    Pool /w Sync:   0.01 seconds
+    Pool:           not possible
+  Test 3: Alloc & Dealloc 700000 ints:
+    std::allocator: 0.056 seconds
+    malloc/free:    0.054 seconds
+    new/delete:     0.066 seconds
+    Pool Alloc:     0.002 seconds
+    Pool /w Sync:   0.002 seconds
+    Pool:           0.001 seconds
+  Test 4: Alloc 700000 ints & Dealloc 700000 ints:
+    std::allocator: 0.071 seconds
+    malloc/free:    0.068 seconds
+    new/delete:     0.081 seconds
+    Pool Alloc:     0.005 seconds
+    Pool /w Sync:   0.004 seconds
+    Pool:           0.005 seconds
+  Test 5: Alloc & Dealloc 700000 structures of size 64:
+    std::allocator: 0.058 seconds
+    malloc/free:    0.057 seconds
+    new/delete:     0.07 seconds
+    Pool Alloc:     0.002 seconds
+    Pool /w Sync:   0.002 seconds
+    Pool:           0.001 seconds
+  Test 6: Alloc & Dealloc 700000 structures of size 256:
+    std::allocator: 0.059 seconds
+    malloc/free:    0.058 seconds
+    new/delete:     0.07 seconds
+    Pool Alloc:     0.002 seconds
+    Pool /w Sync:   0.002 seconds
+    Pool:           0.002 seconds
+  Test 7: Alloc & Dealloc 700000 structures of size 4096:
+    std::allocator: 0.061 seconds
+    malloc/free:    0.059 seconds
+    new/delete:     0.07 seconds
+    Pool Alloc:     0.002 seconds
+    Pool /w Sync:   0.002 seconds
+    Pool:           0.001 seconds
+========== Rebuild All: 1 succeeded, 0 failed, 0 skipped ==========
+
+
+*/
+
+
 
