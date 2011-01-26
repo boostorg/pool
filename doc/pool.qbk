@@ -257,7 +257,7 @@ void func()
 [endsect] [/section pool]
 
 
-[section:object_pool object_pool]
+[section:object_pool Object_pool]
 
 The [classref boost::object_pool template class object_pool] 
 interface is an Object Usage interface with Null Return,
@@ -327,7 +327,7 @@ void func()
 
 [endsect] [/section object_pool]
 
-[section:singleton_pool singleton_pool]
+[section:singleton_pool Singleton_pool]
 
 The [classref boost::singleton_pool singleton_pool interface]
 at [headerref boost/pool/singleton_pool.hpp singleton_pool.hpp] 
@@ -991,7 +991,7 @@ block is properly aligned for an array of void *] [] [] [Interleaves a free list
 
 [endsect] [/section:pooling Pool in more depth]
 
-[xinclude autodoc.xml] [/ Using Doxygen reference documentation.]
+[xinclude autodoc.xml] [/ Boost.Pool Reference section, using Doxygen reference documentation.]
 
 [/Note that there will be always some warnings about the .ipp files in Doxygen warnings and Autodoxywarnings.log files. 
 "Warning: include file boost/pool/detail/pool_construct.ipp not found, perhaps you forgot to add its directory to INCLUDE_PATH?"
@@ -1000,6 +1000,20 @@ All the automatically generated constructors are documented in the Doxygen stand
 only the access to source files is missing.
 The current Quickbook version does not deal with the /details directory so the problem does not arise
 - unless the details files are included in future.]
+
+[/Note also that there is something funny about implementation class PODptr.
+It is always necessary to qualify it thus "details::PODptr"
+
+and this confuses Doxygen complaining thus:
+
+Cannot find class named 'details::PODptr'
+Cannot find class named 'details::PODptr'
+Cannot find class named 'details::PODptr'
+Cannot find class named 'details::PODptr'
+
+Attempts to avoid this with "using boost::details::PODptr;" have so far failed.
+
+]
 
 [endsect] [/section:pool Boost Pool Library]
 
@@ -1161,7 +1175,7 @@ These comments appear in the reference section.
 '''
 ]
 
-[/ BOOST_PREVENT_MACRO_SUBSTITUTION is the only macro and not sure if useful?
+[/ BOOST_PREVENT_MACRO_SUBSTITUTION is the only macro and not sure if useful to show here?
   but after removing still get BOOST_PREVENT_MACRO_SUBSTITUTION in the function index.
 	<index type="macro_name">
 	<title>Macro Index</title>

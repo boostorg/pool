@@ -21,8 +21,9 @@ if --enable-index in  [ modules.peek : ARGV ]
    ECHO "Building the Pool docs with automatic index generation enabled." ;
    using auto-index ;
    project : requirements
-        <auto-index>on # Turns on index (or off).
-        
+         # <auto-index>on turns on index (or off).
+        <auto-index>on
+                
         # Choose indexing method (separately for html and pdf):
         <format>html:<auto-index-internal>on  # on (or off) to use internally generated indexes.
         # <format>html:<xsl:param>generate.index=0 # Don't let the XSL stylesheets generate indexes.
@@ -34,10 +35,14 @@ if --enable-index in  [ modules.peek : ARGV ]
         # PDF native index support is probably better for PDFs as then you actually get page numbers.
 
         <auto-index-script>index.idx # Specifies the name of the script to load. 
-        # <auto-index-prefix>../../../.. used by math
-        # <auto-index-prefix>../../../ # OK
+        # <auto-index-prefix>../../../ # Path to /pool so index.idx !scan-path can use boost/ and libs/doc.
         <auto-index-prefix>../../.. 
-        <quickbook-define>enable_index ;
+        
+        <quickbook-define>enable_index
+        
+        # <auto-index-verbose>on
+        
+        ;
 }
 else
 {
@@ -70,7 +75,7 @@ doxygen autodoc
 			<doxygen:param>HIDE_UNDOC_MEMBERS=YES
 			<doxygen:param>EXTRACT_PRIVATE=NO
 			<doxygen:param>EXPAND_ONLY_PREDEF=YES
-			<xsl:param>"boost.doxygen.reftitle=Boost.Pool Reference"
+			<xsl:param>"boost.doxygen.reftitle=Boost.Pool C++ Reference"
    ;
 
 xml pool : pool.qbk ;
