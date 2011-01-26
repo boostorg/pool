@@ -24,18 +24,18 @@
   They also both satisfy the additional requirements found in [20.1.5/4];
   this permits their usage with any Standard-compliant container.
 
-	In addition, the fast_pool_allocator also provides an additional allocation
-	and an additional deallocation function:
+  In addition, the fast_pool_allocator also provides an additional allocation
+  and an additional deallocation function:
 
-	Symbol Table\n
-	Symbol	Meaning\n
-	PoolAlloc	fast_pool_allocator<T, UserAllocator>\n
-	p	value of type T *\n
-	\n
-	Additional allocation/deallocation functions (fast_pool_allocator only)\n
-	Expression	Return Type	Semantic Equivalence\n
-	PoolAlloc::allocate()	T *	PoolAlloc::allocate(1)\n
-	PoolAlloc::deallocate(p)	void	PoolAlloc::deallocate(p, 1)\n
+  Symbol Table\n
+  Symbol	Meaning\n
+  PoolAlloc	fast_pool_allocator<T, UserAllocator>\n
+  p	value of type T *\n
+  \n
+  Additional allocation/deallocation functions (fast_pool_allocator only)\n
+  Expression	Return Type	Semantic Equivalence\n
+  PoolAlloc::allocate()	T *	PoolAlloc::allocate(1)\n
+  PoolAlloc::deallocate(p)	void	PoolAlloc::deallocate(p, 1)\n
 
 The typedef user_allocator publishes the value of the UserAllocator template parameter.
 
@@ -224,14 +224,14 @@ struct fast_pool_allocator_tag
 
  /*! Fast Pool memory allocator.
 
-	pool_allocator is a more general-purpose solution, geared towards
-	efficiently servicing requests for any number of contiguous chunks.
-	fast_pool_allocator is also a general-purpose solution,
-	but is geared towards efficiently servicing requests for one chunk at a time;
-	it will work for contiguous chunks, but not as well as pool_allocator.
-	If you are seriously concerned about performance,
-	use fast_pool_allocator when dealing with containers such as std::list,
-	and use pool_allocator when dealing with containers such as std::vector.
+  pool_allocator is a more general-purpose solution, geared towards
+  efficiently servicing requests for any number of contiguous chunks.
+  fast_pool_allocator is also a general-purpose solution,
+  but is geared towards efficiently servicing requests for one chunk at a time;
+  it will work for contiguous chunks, but not as well as pool_allocator.
+  If you are seriously concerned about performance,
+  use fast_pool_allocator when dealing with containers such as std::list,
+  and use pool_allocator when dealing with containers such as std::vector.
 */
 template <typename T,
     typename UserAllocator,
@@ -253,7 +253,7 @@ class fast_pool_allocator
     typedef typename pool<UserAllocator>::size_type size_type;
     typedef typename pool<UserAllocator>::difference_type difference_type;
 
-		//! ???  TODO rebind description needed.
+    //! ???  TODO rebind description needed.
     template <typename U>
     struct rebind
     {

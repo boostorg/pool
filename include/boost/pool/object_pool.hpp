@@ -85,8 +85,8 @@ class object_pool: protected pool<UserAllocator>
     // for the sake of code readability :)
     static void * & nextof(void * const ptr)
     { //! \returns dereferenced ptr (for the sake of code readability :)
-			return *(static_cast<void **>(ptr));
-		}
+      return *(static_cast<void **>(ptr));
+    }
 
   public:
     explicit object_pool(const size_type next_size = 32, const size_type max_size = 0)
@@ -96,7 +96,7 @@ class object_pool: protected pool<UserAllocator>
       //! \param next_size number of chunks to request from the system the next time that object needs to allocate system memory (default 32).
       //! \pre next_size != 0.
       //! \param max_size maximum size of block.
-		}
+    }
 
     ~object_pool();
 
@@ -104,14 +104,14 @@ class object_pool: protected pool<UserAllocator>
     element_type * malloc BOOST_PREVENT_MACRO_SUBSTITUTION()
     { //! Allocates memory that can hold one object of type ElementType.
       //! If out of memory, returns 0. Amortized O(1).
-			return static_cast<element_type *>(store().ordered_malloc());
-		}
+      return static_cast<element_type *>(store().ordered_malloc());
+    }
     void free BOOST_PREVENT_MACRO_SUBSTITUTION(element_type * const chunk)
     { //! De-Allocates memory that holds a chunk of type ElementType.
       //!  Note that p may not be 0.\n
       //! Note that the destructor for p is not called. O(N).
-			store().ordered_free(chunk);
-		}
+      store().ordered_free(chunk);
+    }
     bool is_from(element_type * const chunk) const
     { /*! \returns true  if p was allocated from u or
       may be returned as the result of a future allocation from u.
@@ -120,8 +120,8 @@ class object_pool: protected pool<UserAllocator>
       Otherwise, the return value is meaningless.
       Note that this function may not be used to reliably test random pointer values!
     */
-			return store().is_from(chunk);
-		}
+      return store().is_from(chunk);
+    }
 
     element_type * construct()
     { //! Constructs a new
