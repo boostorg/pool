@@ -5,57 +5,55 @@
 #   License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
 #   http://www.boost.org/LICENSE_1_0.txt)
 
-# Assume all header files are in boost/quick_auto_dox_index and sub-folders.
+# Assume all header files are in boost/pool and sub-folders.
 # Perhaps exclude sub-folder /details by setting to false?
 !scan-path boost/pool .*\.hpp true
 
-# Assume all Quickbook files are in /docs (none in sub-folders).
-!scan-path "libs/pool" ".*\.qbk"
+# Assume all example files are in /example (none in sub-folders).
+!scan-path "libs/pool/example" ".*\.cpp"
 
-
-align
-alignment
+align 
+alignment 
 alloc
 allocation
-automatic destruction
+automatic destruction  
 build
-chunk
-chunks
-concepts
+chunk   \<chunk\w*\>
+concepts  \<concept\w*\>
 conventions
 deallocation
 dynamic memory allocation
 elements
-formatting conventions
-include
+formatting conventions  \<convention\w*\>
+include   \<include\w*\>
 installation
-Guaranteeing Alignment
-guarantees proper alignment
-headers
-interfaces
-jamfile.v2
+guaranteeing alignment  \<guarantee\w*\>
+headers  \<header\w*\>
+interface \<interface\w*\>
+jamfile  \<jamfile\.*\>
 malloc
 memory
 memory block
 naming
 new
-objects
+objects \<object\w*\>
 object_pool
 overview
 padding
+portable \<portab\w*\>
 segregated storage
 Simple Segregated Storage
-singleton
+singleton  \<singleton\w*\>
 singleton_pool
-size
-template
+size   \<size\w*\>
+template \<template\w*\>
 
 
-!exclude policy 
+#  \<\w*\>
+
+!exclude junk 
 
 !rewrite-name "(?i)(?:A|The)\s+(.*)" "\1"
-!rewrite-name "Additional Implementation Notes" "Implementation Notes"
-!rewrite-name "(?i)Calculating(?:\s+the)?\s+(.*)" "\1"
 
 
 
