@@ -8,6 +8,13 @@ project
         <library>/boost/test//boost_test_exec_monitor/<link>static
         <include>../../..
         <define>BOOST_ALL_NO_LIB=1
+        <warnings>all
+        <toolset>gcc:<cxxflags>-Wextra
+        <toolset>gcc:<warnings-as-errors>on
+        <toolset>gcc:<cxxflags>-Wno-long-long
+        <toolset>gcc:<cxxflags>-Wcast-align
+        <toolset>intel:<warnings-as-errors>on
+        <toolset>msvc:<warnings-as-errors>on
     ;
 
 import testing ;
@@ -19,4 +26,7 @@ test-suite pool :
     [ run pool_msvc_compiler_bug_test.cpp ]
     [ run test_msvc_mem_leak_detect.cpp ]
     [ run test_bug_3349.cpp ]
+    [ run test_bug_3441.cpp ]
     ;
+
+

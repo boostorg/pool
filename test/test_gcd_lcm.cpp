@@ -19,6 +19,10 @@
 #include <climits>
 #include <ctime>
 
+#ifdef BOOST_MSVC
+#pragma warning(disable:4127)  // Conditional expression is constant
+#endif
+
 boost::mt19937 gen;
 
 int main()

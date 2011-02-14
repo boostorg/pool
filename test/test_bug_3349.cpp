@@ -18,6 +18,7 @@ int main()
 
     void* pBlock1 = p.ordered_malloc( 1 );
     void* pBlock2 = p.ordered_malloc( 4 );
+    (void)pBlock2; // warning suppression
 
     p.ordered_free( pBlock1 );
 

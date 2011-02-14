@@ -26,6 +26,10 @@
 #include <cstdlib>
 #include <ctime>
 
+#ifdef BOOST_MSVC
+#pragma warning(disable:4267)
+#endif
+
 // "A free list is ordered if repeated calls to malloc() will result in a
 //  constantly-increasing sequence of values, as determined by std::less<void*>"
 // Return: true if in constantly-increasing order, false otherwise
