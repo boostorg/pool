@@ -26,6 +26,11 @@
 
 #include <boost/pool/poolfwd.hpp>
 
+#ifdef BOOST_MSVC
+#pragma warning(push)
+#pragma warning(disable:4127)  // Conditional expression is constant
+#endif
+
 namespace boost {
 
 /*!
@@ -327,5 +332,9 @@ void * simple_segregated_storage<SizeType>::malloc_n(const size_type n,
 }
 
 } // namespace boost
+
+#ifdef BOOST_MSVC
+#pragma warning(pop)
+#endif
 
 #endif

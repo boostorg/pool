@@ -33,6 +33,11 @@
 // boost::simple_segregated_storage
 #include <boost/pool/simple_segregated_storage.hpp>
 
+#ifdef BOOST_POOL_INSTRUMENT
+#include <iostream>
+#include<iomanip>
+#endif
+
 #ifdef BOOST_NO_STDC_NAMESPACE
  namespace std { using ::malloc; using ::free; }
 #endif
@@ -67,7 +72,12 @@
 
 */
 
-namespace boost
+#ifdef BOOST_MSVC
+#pragma warning(push)
+#pragma warning(disable:4127)  // Conditional expression is constant
+#endif
+
+ namespace boost
 {
 
 //!  Default User allocator new used as default template parameter for UserAllocator.  Uese new and delete.
@@ -713,8 +723,15 @@ void * pool<UserAllocator>::ordered_malloc(const size_type n)
 
   void * ret = store().malloc_n(num_chunks, partition_size);
 
-  if (ret != 0)
+#ifdef BOOST_POOL_INSTRUMENT
+  std::cout << "Allocating " << n << " chunks from pool of size " << partition_size << std::endl;
+#endif
+  if ((ret != 0) || (n == 0))
     return ret;
+
+#ifdef BOOST_POOL_INSTRUMENT
+  std::cout << "Cache miss, allocating another chunk...\n";
+#endif
 
   // Not enough memory in our storages; make a new storage,
   BOOST_USING_STD_MAX();
@@ -781,6 +798,10 @@ pool<UserAllocator>::find_POD(void * const chunk) const
 }
 
 } // namespace boost
+
+#ifdef BOOST_MSVC
+#pragma warning(pop)
+#endif
 
 #endif // #ifdef BOOST_POOL_HPP
 

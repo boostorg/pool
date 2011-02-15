@@ -86,6 +86,11 @@ STLport (with any compiler), ver. 4.0 and earlier\n
 
 #include <boost/detail/workaround.hpp>
 
+#ifdef BOOST_POOL_INSTRUMENT
+#include <iostream>
+#include <iomanip>
+#endif
+
 // The following code will be put into Boost.Config in a later revision
 #if defined(_RWSTD_VER) || defined(__SGI_STL_PORT) || \
     BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
@@ -93,6 +98,19 @@ STLport (with any compiler), ver. 4.0 and earlier\n
 #endif
 
 namespace boost {
+
+#ifdef BOOST_POOL_INSTRUMENT
+
+template <bool b>
+struct debug_info
+{
+   static unsigned allocated;
+};
+
+template <bool b>
+unsigned debug_info<b>::allocated = 0;
+
+#endif
 
  //! Tag to identify pool_allocator when used as template parameter.
  struct pool_allocator_tag
@@ -178,10 +196,15 @@ class pool_allocator
 
     static pointer allocate(const size_type n)
     {
+#ifdef BOOST_POOL_INSTRUMENT
+       debug_info<true>::allocated += n * sizeof(T);
+       std::cout << "Allocating " << n << " * " << sizeof(T) << " bytes...\n"
+          "Total allocated is now " << debug_info<true>::allocated << std::endl;
+#endif
       const pointer ret = static_cast<pointer>(
           singleton_pool<pool_allocator_tag, sizeof(T), UserAllocator, Mutex,
               NextSize, MaxSize>::ordered_malloc(n) );
-      if (ret == 0)
+      if ((ret == 0) && n)
         boost::throw_exception(std::bad_alloc());
       return ret;
     }
@@ -189,6 +212,11 @@ class pool_allocator
     { return allocate(n); }
     static void deallocate(const pointer ptr, const size_type n)
     {
+#ifdef BOOST_POOL_INSTRUMENT
+       debug_info<true>::allocated -= n * sizeof(T);
+       std::cout << "Deallocating " << n << " * " << sizeof(T) << " bytes...\n"
+          "Total allocated is now " << debug_info<true>::allocated << std::endl;
+#endif
 #ifdef BOOST_NO_PROPER_STL_DEALLOCATE
       if (ptr == 0 || n == 0)
         return;
