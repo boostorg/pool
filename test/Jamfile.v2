@@ -27,6 +27,7 @@ test-suite pool :
     [ run test_msvc_mem_leak_detect.cpp ]
     [ run test_bug_3349.cpp ]
     [ run test_bug_4960.cpp ]
+    [ run test_bug_1252.cpp ]
     ;
 
 
