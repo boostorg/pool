@@ -37,7 +37,7 @@ void test_alignment(T)
    unsigned limit = 100000;
    for(unsigned i = 0; i < limit; ++i)
    {
-      void* ptr = p.malloc();
+      void* ptr = (p.malloc)();
       BOOST_TEST(reinterpret_cast<std::size_t>(ptr) % align == 0);
       // Trample over the memory just to be sure the allocated block is big enough, 
       // if it's not, we'll trample over the next block as well (and our internal housekeeping).
@@ -49,7 +49,7 @@ void test_alignment(T)
 int main() 
 {
    boost::pool<limited_allocator_new_delete> po(1501);
-   void* p = po.malloc();
+   void* p = (po.malloc)();
    BOOST_TEST(p != 0);
 
    test_alignment(char(0));

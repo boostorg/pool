@@ -230,7 +230,7 @@ The member function valid can be used to test for validity.
 template <typename UserAllocator>
 //!  \tparam UserAllocator type - the method that the Pool will use to allocate memory from the system.
 class pool: protected simple_segregated_storage < typename UserAllocator::size_type >
-{/*! \class boost::pool::pool
+{/*! \class boost::pool
   \brief A fast memory allocator that guarantees proper alignment of all allocated chunks.
   \details Whenever an object of type pool needs memory from the system,
   it will request it from its UserAllocator template parameter.
@@ -238,7 +238,7 @@ class pool: protected simple_segregated_storage < typename UserAllocator::size_t
   that is, each time more system memory is allocated,
   the amount of system memory requested is doubled.
 
-  Users may control the doubling algorithm by using the following extensions.
+  Users may control the doubling algorithm by using the following foobar extensions:
 
   Users may pass an additional constructor parameter to pool.
   This parameter is of type size_type,
@@ -246,6 +246,15 @@ class pool: protected simple_segregated_storage < typename UserAllocator::size_t
   the first time that object needs to allocate system memory.
   The default is 32. This parameter may not be 0.
 
+  Users may also pass an optional third parameter to pool's
+  constructor.  This parameter is of type size_type,
+  and sets a maximum size for allocated chunks.  When this
+  parameter takes the default value of 0, then there is no upper
+  limit on chunk size.
+
+  Finally, if the doubling algorithm results in no memory
+  being allocated, the pool will backtrack just once, halving
+  the chunk size and trying again.
 
 */
   public:
@@ -645,12 +654,23 @@ void * pool<UserAllocator>::malloc_need_resize()
 { //! No memory in any of our storages; make a new storage,
   //!  Allocates chunk in newly malloc aftert resize.
   //! \returns pointer to chunk.
-  const size_type partition_size = alloc_size();
-  const size_type POD_size = next_size * partition_size +
+  size_type partition_size = alloc_size();
+  size_type POD_size = next_size * partition_size +
       details::pool::ct_lcm<sizeof(size_type), sizeof(void *)>::value + sizeof(size_type);
-  char * const ptr = (UserAllocator::malloc)(POD_size);
+  char * ptr = (UserAllocator::malloc)(POD_size);
   if (ptr == 0)
-    return 0;
+  {
+     if(next_size > 4)
+     {
+        next_size >>= 1;
+        partition_size = alloc_size();
+        POD_size = next_size * partition_size +
+            details::pool::ct_lcm<sizeof(size_type), sizeof(void *)>::value + sizeof(size_type);
+        ptr = (UserAllocator::malloc)(POD_size);
+     }
+     if(ptr == 0)
+        return 0;
+  }
   const details::PODptr<size_type> node(ptr, POD_size);
 
   BOOST_USING_STD_MIN();
@@ -674,12 +694,23 @@ template <typename UserAllocator>
 void * pool<UserAllocator>::ordered_malloc_need_resize()
 { //! No memory in any of our storages; make a new storage,
   //! \returns pointer to new chunk.
-  const size_type partition_size = alloc_size();
-  const size_type POD_size = next_size * partition_size +
+  size_type partition_size = alloc_size();
+  size_type POD_size = next_size * partition_size +
       details::pool::ct_lcm<sizeof(size_type), sizeof(void *)>::value + sizeof(size_type);
-  char * const ptr = (UserAllocator::malloc)(POD_size);
+  char * ptr = (UserAllocator::malloc)(POD_size);
   if (ptr == 0)
-    return 0;
+  {
+     if(next_size > 4)
+     {
+       next_size >>= 1;
+       partition_size = alloc_size();
+       POD_size = next_size * partition_size +
+                    details::pool::ct_lcm<sizeof(size_type), sizeof(void *)>::value + sizeof(size_type);
+       ptr = (UserAllocator::malloc)(POD_size);
+     }
+     if(ptr == 0)
+       return 0;
+  }
   const details::PODptr<size_type> node(ptr, POD_size);
 
   BOOST_USING_STD_MIN();
@@ -749,11 +780,24 @@ void * pool<UserAllocator>::ordered_malloc(const size_type n)
   // Not enough memory in our storages; make a new storage,
   BOOST_USING_STD_MAX();
   next_size = max BOOST_PREVENT_MACRO_SUBSTITUTION(next_size, num_chunks);
-  const size_type POD_size = next_size * partition_size +
+  size_type POD_size = next_size * partition_size +
       details::pool::ct_lcm<sizeof(size_type), sizeof(void *)>::value + sizeof(size_type);
-  char * const ptr = (UserAllocator::malloc)(POD_size);
+  char * ptr = (UserAllocator::malloc)(POD_size);
   if (ptr == 0)
-    return 0;
+  {
+     if(num_chunks < next_size)
+     {
+        // Try again with just enough memory to do the job, or at least whatever we
+        // allocated last time:
+        next_size >>= 1;
+        next_size = max BOOST_PREVENT_MACRO_SUBSTITUTION(next_size, num_chunks);
+        POD_size = next_size * partition_size +
+            details::pool::ct_lcm<sizeof(size_type), sizeof(void *)>::value + sizeof(size_type);
+        ptr = (UserAllocator::malloc)(POD_size);
+     }
+     if(ptr == 0)
+       return 0;
+  }
   const details::PODptr<size_type> node(ptr, POD_size);
 
   // Split up block so we can use what wasn't requested.
@@ -761,7 +805,11 @@ void * pool<UserAllocator>::ordered_malloc(const size_type n)
     store().add_ordered_block(node.begin() + num_chunks * partition_size,
         node.element_size() - num_chunks * partition_size, partition_size);
 
-  next_size <<= 1;
+  BOOST_USING_STD_MIN();
+  if(!max_size)
+    next_size <<= 1;
+  else if( next_size*partition_size/requested_size < max_size)
+    next_size = min BOOST_PREVENT_MACRO_SUBSTITUTION(next_size << 1, max_size*requested_size/ partition_size);
 
   //  insert it into the list,
   //   handle border case.

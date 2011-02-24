@@ -28,6 +28,7 @@ test-suite pool :
     [ run test_bug_3349.cpp ]
     [ run test_bug_4960.cpp ]
     [ run test_bug_1252.cpp ]
+    [ run test_bug_2696.cpp ]
     ;
 
 
