@@ -286,5 +286,5 @@ int main()
     test_mem_usage();
     test_void();
 
-    return 0;
+    return boost::report_errors();
 }

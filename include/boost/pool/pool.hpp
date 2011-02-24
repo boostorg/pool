@@ -32,6 +32,10 @@
 #include <boost/pool/detail/gcd_lcm.hpp>
 // boost::simple_segregated_storage
 #include <boost/pool/simple_segregated_storage.hpp>
+// boost::alignment_of
+#include <boost/type_traits/alignment_of.hpp>
+// BOOST_ASSERT
+#include <boost/assert.hpp>
 
 #ifdef BOOST_POOL_INSTRUMENT
 #include <iostream>
@@ -252,6 +256,8 @@ class pool: protected simple_segregated_storage < typename UserAllocator::size_t
   private:
     BOOST_STATIC_CONSTANT(unsigned, min_alloc_size =
         (::boost::details::pool::ct_lcm<sizeof(void *), sizeof(size_type)>::value) );
+    BOOST_STATIC_CONSTANT(unsigned, min_align =
+        (::boost::details::pool::ct_lcm< ::boost::alignment_of<void *>::value, ::boost::alignment_of<size_type>::value>::value) );
 
     //! \returns 0 if out-of-memory.
     //! Called if malloc/ordered_malloc needs to resize the free list.
@@ -304,10 +310,17 @@ class pool: protected simple_segregated_storage < typename UserAllocator::size_t
 
     size_type alloc_size() const
     { //!  Calculated size of the memory chunks that will be allocated by this Pool.
-      //! For alignment reasons, this is defined to be lcm(requested_size, sizeof(void *), sizeof(size_type)).
       //! \returns allocated size.
-      const unsigned min_size = min_alloc_size;
-      return details::pool::lcm<size_type>(requested_size, min_size);
+      // For alignment reasons, this used to be defined to be lcm(requested_size, sizeof(void *), sizeof(size_type)),
+      // but is now more parsimonious: just rounding up to the minimum required alignment of our housekeeping data
+      // when required.  This works provided all alignments are powers of two.
+      unsigned s = (std::max)(requested_size, static_cast<unsigned>(min_alloc_size));
+      unsigned rem = s % min_align;
+      if(rem)
+         s += min_align - rem;
+      BOOST_ASSERT(s >= min_alloc_size);
+      BOOST_ASSERT(s % min_align == 0);
+      return s;
     }
 
     static void * & nextof(void * const ptr)

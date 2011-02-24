@@ -8,7 +8,6 @@
 #  See http://www.boost.org for updates, documentation, and revision history.
 
 path-constant nav_images :  html/images/ ; # png and svg images for home, next, note, tip...
-#path-constant images_location : html/images/ ; # location of SVG and PNG images referenced by Quickbook.
 path-constant images_location : html ; # location of SVG and PNG images referenced by Quickbook.
 
 echo "images_location" $(images_location) ; # \guild\pool\libs\pool\doc\html
@@ -51,7 +50,6 @@ else
 
 using doxygen ;  # Required if you want to use Doxygen.
 using quickbook ;
-# using auto-index ; # Required if you want to use autoindexing (see above).
 
 doxygen autodoc
    :
@@ -71,7 +69,7 @@ doxygen autodoc
 			# Much better to send message to a logfile than the default stderr.
 			# and make sure that there are no Doxygen errors or significant warnings in the log file.
 			<doxygen:param>RECURSIVE=NO # Search recursively down subdirectories.
-      <doxygen:param>EXTRACT_ALL=NO
+                        <doxygen:param>EXTRACT_ALL=NO
 			<doxygen:param>HIDE_UNDOC_MEMBERS=YES
 			<doxygen:param>EXTRACT_PRIVATE=NO
 			<doxygen:param>EXPAND_ONLY_PREDEF=YES
@@ -104,7 +102,7 @@ boostbook standalone
 		<xsl:param>boost.image=Boost # options are: none (no logo), Boost (for boost.png), or your own logo, for example, inspired_by_boost.png
 		<xsl:param>boost.image.src=./images/boost.png #
 		<xsl:param>boost.image.w=180 # Width of logo in pixels. (JM has W = 162, h = 46)
-    <xsl:param>boost.image.h=90 # Height of logo in pixels.
+                <xsl:param>boost.image.h=90 # Height of logo in pixels.
   
   	# Options for html and pdf
   	# ========================
@@ -168,16 +166,14 @@ boostbook standalone
 		<format>pdf:<xsl:param>boost.url.prefix=I:/boost-sandbox/guild/pool/libs/pool/doc/html
 		
 		<dependency>autodoc #
-
+      <dependency>css-install
+      <dependency>png-install
+      <dependency>svg-install
    ;
 
-#install pdf-install : standalone : <location>. <install-type>PDF ; # copy pdf to libs/pool/doc, . means same location as .qbk = /doc .
-# for pdf moves pool.modified.pdf instead.
-
-# install pdf-install : standalone : <install-type>PDF <location>.<name>math.pdf ;
-
-#install pdf-install : standalone : <location>.<name>math.pdf <install-type>PDF ;
-#install pdf-install : standalone : <install-type>PDF <location>. <name>type_traits.pdf ;
 install pdf-install : standalone : <install-type>PDF <location>. <name>pool.pdf ;
 
-# copy pdf to libs/pool/doc, same location as .qbk .
+path-constant boost-root : [ modules.peek : BOOST ] ;
+install css-install : $(boost-root)/doc/src/boostbook.css : <location>html ;
+install png-install : [ glob $(boost-root)/doc/src/images/*.png $(boost-root)/boost.png ] : <location>html/images ;
+install svg-install : [ glob $(boost-root)/doc/src/images/*.svg ] : <location>html/images ;

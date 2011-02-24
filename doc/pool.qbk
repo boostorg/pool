@@ -809,8 +809,9 @@ Each block also contains a pointer to the next block;
 but that is stored as a pointer to void and cast when necessary,
 to simplify alignment requirements to the three types above.
 
-Therefore, `alloc_size` is defined to be the LCM (least common multiple)
-of the sizes of the three types above.
+Therefore, `alloc_size` is defined to be the largest of the sizes above, rounded up to be a multiple
+of all three sizes.  This guarantees alignment provided all alignments are powers of two: something that 
+appears to be true on all known platforms.
 
 [h4 A Look at the Memory Block]
 
@@ -1027,6 +1028,11 @@ Attempts to avoid this with "using boost::details::PODptr;" have so far failed.
 
 [section [*Version 2.0.0, January 11, 2011] ['Documentation and testing revision]]
 [*Features:]
+
+* Fix issues 
+[@https://svn.boost.org/trac/boost/ticket/1252 1252],
+[@https://svn.boost.org/trac/boost/ticket/4960 4960],
+[@https://svn.boost.org/trac/boost/ticket/2696 2696].
 
 * Documentation converted and rewritten and revised 
 by Paul A. Bristow using Quickbook, Doxygen, for html and pdf,
