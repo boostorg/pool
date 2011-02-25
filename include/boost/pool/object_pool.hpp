@@ -20,7 +20,7 @@ See User Allocators for details.
 
 \details
 
-(&t)->~ObjectPool()	Destructs the ObjectPool.\n
+(&t)->~ObjectPool() Destructs the ObjectPool.\n
 ~ElementType() is called for each allocated ElementType that has not been deallocated. O(N).\n\n
 
 Extensions to Public Interface\n
@@ -75,12 +75,18 @@ class object_pool: protected pool<UserAllocator>
   public:
     typedef T element_type; //!< ElementType
     typedef UserAllocator user_allocator; //!<
-    typedef typename pool<UserAllocator>::size_type size_type; //!< 	pool<UserAllocator>::size_type
+    typedef typename pool<UserAllocator>::size_type size_type; //!<   pool<UserAllocator>::size_type
     typedef typename pool<UserAllocator>::difference_type difference_type; //!< pool<UserAllocator>::difference_type
 
   protected:
-    pool<UserAllocator> & store() { return *this; }
-    const pool<UserAllocator> & store() const { return *this; }
+    pool<UserAllocator> & store()
+    { //! \return *this
+      return *this;
+    }
+    const pool<UserAllocator> & store() const
+    { //! \return *this
+      return *this;
+    }
 
     // for the sake of code readability :)
     static void * & nextof(void * const ptr)
@@ -114,11 +120,11 @@ class object_pool: protected pool<UserAllocator>
     }
     bool is_from(element_type * const chunk) const
     { /*! \returns true  if p was allocated from u or
-      may be returned as the result of a future allocation from u.
+      may be returned as the result of a future allocation from u.\n
       Returns false if p was allocated from some other pool or
       may be returned as the result of a future allocation from some other pool.
       Otherwise, the return value is meaningless.
-      Note that this function may not be used to reliably test random pointer values!
+      \note This function may NOT be used to reliably test random pointer values!
     */
       return store().is_from(chunk);
     }
@@ -157,14 +163,21 @@ class object_pool: protected pool<UserAllocator>
       (free)(chunk);
     }
 
-    size_type get_next_size() const { return store().get_next_size(); }
-    void set_next_size(const size_type x) { store().set_next_size(x); }
+    size_type get_next_size() const
+    { //! \returns next_size.
+      return store().get_next_size();
+    }
+    void set_next_size(const size_type x)
+    { //! Set new next_size.
+      //! \param x wanted next_size (!= 0).
+      store().set_next_size(x);
+    }
 };
 
 template <typename T, typename UserAllocator>
 object_pool<T, UserAllocator>::~object_pool()
 {
-  // handle trivial case
+  // handle trivial case of invalid list.
   if (!this->list.valid())
     return;
 
@@ -181,35 +194,35 @@ object_pool<T, UserAllocator>::~object_pool()
     // increment next
     next = next.next();
 
-    // delete all contained objects that aren't freed
+    // delete all contained objects that aren't freed.
 
-    // Iterate 'i' through all chunks in the memory block
+    // Iterate 'i' through all chunks in the memory block.
     for (char * i = iter.begin(); i != iter.end(); i += partition_size)
     {
-      // If this chunk is free
+      // If this chunk is free,
       if (i == freed_iter)
       {
-        // Increment freed_iter to point to next in free list
+        // Increment freed_iter to point to next in free list.
         freed_iter = nextof(freed_iter);
 
-        // Continue searching chunks in the memory block
+        // Continue searching chunks in the memory block.
         continue;
       }
 
-      // This chunk is not free (allocated), so call its destructor
+      // This chunk is not free (allocated), so call its destructor,
       static_cast<T *>(static_cast<void *>(i))->~T();
-      // and continue searching chunks in the memory block
+      // and continue searching chunks in the memory block.
     }
 
-    // free storage
+    // free storage.
     (UserAllocator::free)(iter.begin());
 
-    // increment iter
+    // increment iter.
     iter = next;
   } while (iter.valid());
 
   // Make the block list empty so that the inherited destructor doesn't try to
-  //  free it again.
+  // free it again.
   this->list.invalidate();
 }
 

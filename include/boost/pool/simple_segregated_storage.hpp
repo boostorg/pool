@@ -57,8 +57,8 @@ class simple_segregated_storage
 
   protected:
     void * first; /*!< This data member is the free list.
-			It points to the first chunk in the free list,
-			or is equal to 0 if the free list is empty.
+      It points to the first chunk in the free list,
+      or is equal to 0 if the free list is empty.
     */
 
     //! \fn find_prev Traverses the free list referred to by "first",
@@ -84,8 +84,8 @@ class simple_segregated_storage
     //! and then dereference and assign (*static_cast<void **>(first) = 0;).
     //! This can be done more easily through the use of this convenience function (nextof(first) = 0;).
     //! \returns dereferenced pointer.
-			return *(static_cast<void **>(ptr));
-		}
+      return *(static_cast<void **>(ptr));
+    }
 
   public:
     // Post: empty()
@@ -93,7 +93,7 @@ class simple_segregated_storage
     :first(0)
     { //! Construct empty storage area.
       //! \post empty()
-		}
+    }
 
     //! Segregate block into chunks.
     //! \pre npartition_sz >= sizeof(void *)
@@ -143,13 +143,12 @@ class simple_segregated_storage
     // default destructor.
 
     bool empty() const
-    { //! \returns true if simple_segregated_storage is empty.
-			return (first == 0);
-		}
+    { //! \returns true only if simple_segregated_storage is empty.
+      return (first == 0);
+    }
 
-    // pre: !empty()
     void * malloc BOOST_PREVENT_MACRO_SUBSTITUTION()
-    { //! Create a chunk
+    { //! Create a chunk.
       //!  \pre !empty()
       //! Increment the "first" pointer to point to the next chunk.
       void * const ret = first;
@@ -159,31 +158,24 @@ class simple_segregated_storage
       return ret;
     }
 
-    // pre: chunk was previously returned from a malloc() referring to the
-    //  same free list
-    // post: !empty()
     void free BOOST_PREVENT_MACRO_SUBSTITUTION(void * const chunk)
-    { //! Freen a chunk.
+    { //! Free a chunk.
       //! \pre chunk was previously returned from a malloc() referring to the same free list.
       //! \post !empty()
       nextof(chunk) = first;
       first = chunk;
     }
 
-    // pre: chunk was previously returned from a malloc() referring to the
-    //  same free list
-    // post: !empty()
     void ordered_free(void * const chunk)
     { //! This (slower) implementation of 'free' places the memory
       //!  back in the list in its proper order.
       //! \pre chunk was previously returned from a malloc() referring to the same free list
       //! \post !empty().
 
-
       // Find where "chunk" goes in the free list
       void * const loc = find_prev(chunk);
 
-      // Place either at beginning or in middle/end
+      // Place either at beginning or in middle/end.
       if (loc == 0)
         (free)(chunk);
       else
@@ -193,23 +185,18 @@ class simple_segregated_storage
       }
     }
 
-    // Note: if you're allocating/deallocating n a lot, you should
-    //  be using an ordered pool.
-     // pre: chunks was previously allocated from *this with the same
-    //   values for n and partition_size.
-    // post: !empty()
    void * malloc_n(size_type n, size_type partition_size);
     //! \pre chunks was previously allocated from *this with the same
     //!   values for n and partition_size.
     //! \post !empty()
-    //! Note: if you're allocating/deallocating n a lot, you should
+    //! \note If you're allocating/deallocating n a lot, you should
     //!  be using an ordered pool.
 
     void free_n(void * const chunks, const size_type n,
         const size_type partition_size)
     { //! Free N chunks.
       //! \pre chunks was previously allocated from *this with the same
-			//!   values for n and partition_size.
+      //!   values for n and partition_size.
 
       if(n != 0)
         add_block(chunks, n * partition_size, partition_size);
@@ -220,9 +207,11 @@ class simple_segregated_storage
     // post: !empty()
     void ordered_free_n(void * const chunks, const size_type n,
         const size_type partition_size)
-    { //! Free n chunkcs from order list.
-			//! \pre chunks was previously allocated from *this with the same
-			//!   values for n and partition_size.
+    { //! Free n chunks from order list.
+      //! \pre chunks was previously allocated from *this with the same
+      //!   values for n and partition_size.
+
+      //! \pre n should not be zero (n == 0 has no effect).
 
       if(n != 0)
         add_ordered_block(chunks, n * partition_size, partition_size);
@@ -231,16 +220,21 @@ class simple_segregated_storage
 
 template <typename SizeType>
 void * simple_segregated_storage<SizeType>::find_prev(void * const ptr)
-{
-  // Handle border case
+{ /*!
+\returns location previous to where ptr would go if it was in the free list.
+\note This function finds the location previous to where ptr would go if it was in the free list.
+It does not find the entry in the free list before ptr
+(unless ptr is already in the free list).
+Specifically, find_prev(0) will return 0, not the last entry in the free list.
+*/
+  // Handle border case.
   if (first == 0 || std::greater<void *>()(first, ptr))
     return 0;
 
   void * iter = first;
   while (true)
   {
-    // if we're about to hit the end or
-    //  if we've found where "ptr" goes
+    // if we're about to hit the end, or if we've found where "ptr" goes.
     if (nextof(iter) == 0 || std::greater<void *>()(nextof(iter), ptr))
       return iter;
 

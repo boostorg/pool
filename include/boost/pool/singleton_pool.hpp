@@ -14,7 +14,7 @@
   \brief Singleton_pool class allows other pool interfaces
   for types of the same size to share the same pool.
 
-  /details singleton_pool.hpp provides a template class singleton_pool,
+  \details singleton_pool.hpp provides a template class singleton_pool,
   which provides access to a pool as a singleton object.\n
   For information on other pool-based interfaces, see the other pool interfaces.\n
 
@@ -45,55 +45,66 @@
 
 namespace boost {
 
- //! singleton pool class allows other pool interfaces
- //! for types of the same size to share the same pool.
- template <typename Tag, unsigned RequestedSize,
-    typename UserAllocator, //!< User allocator, default = default_user_allocator_new_delete
-    typename Mutex, //!< The typedef mutex  publish the values of the template parameter Mutex (default details::pool::default_mutex).
-    unsigned NextSize, //!< The typedef static const value next_size publish the values of the template parameter NextSize, (default 32).
-    unsigned MaxSize> //!< Maximum size.
+ /*! singleton pool class allows other pool interfaces
+  for types of the same size to share the same pool.
+  \tparam Tag to allow different unbounded sets of singleton pools to exist.
+  \tparam RequestedSize  Size of pool requested.
+  \tparam UserAllocator User allocator, default = default_user_allocator_new_delete
+  \tparam Mutex The typedef mutex  publish the values of the template parameter Mutex (default details::pool::default_mutex).
+  \tparam NextSize The typedef static const value next_size publish the values of the template parameter NextSize, (default 32).
+  \tparam MaxSize  Maximum size.
+ */
+
+ template <typename Tag,
+    unsigned RequestedSize,
+    typename UserAllocator,
+    typename Mutex,
+    unsigned NextSize,
+    unsigned MaxSize >
 struct singleton_pool
 {
   public:
     typedef Tag tag; /*!< The Tag template parameter allows
-			different unbounded sets of singleton pools to exist.
-			For example, the pool allocators use two tag classes to ensure that the
-			two different allocator types never share the same underlying singleton pool.
-			Tag is never actually used by singleton_pool.
-		*/
-    typedef Mutex mutex;
-    typedef UserAllocator user_allocator;
-    typedef typename pool<UserAllocator>::size_type size_type;
-    typedef typename pool<UserAllocator>::difference_type difference_type;
+      different unbounded sets of singleton pools to exist.
+      For example, the pool allocators use two tag classes to ensure that the
+      two different allocator types never share the same underlying singleton pool.
+      Tag is never actually used by singleton_pool.
+    */
+    typedef Mutex mutex; //!< Mutex is guard (default details::pool::default_mutex).
+    typedef UserAllocator user_allocator; //!< User allocator, default = default_user_allocator_new_delete.
+    typedef typename pool<UserAllocator>::size_type size_type; //!< size_type of user allocator.
+    typedef typename pool<UserAllocator>::difference_type difference_type; //!< difference_type of user allocator.
 
     BOOST_STATIC_CONSTANT(unsigned, requested_size = RequestedSize);
     BOOST_STATIC_CONSTANT(unsigned, next_size = NextSize);
 
   private:
-    struct pool_type: Mutex
-    { /*! Mutex  This class is the type of mutex to use to protect
+    /*! Mutex class is the type of mutex to use to protect
        simultaneous access to the underlying Pool.
        It is exposed so that users may declare some singleton pools normally
        (i.e., with synchronization),
        but some singleton pools without synchronization
        (by specifying details::pool::null_mutex) for efficiency reasons.
       */
+    struct pool_type: Mutex
+    {
       pool<UserAllocator> p;
       pool_type()
       :
       p(RequestedSize, NextSize)
-      { /*! Pool allocation.
-       See The pair of functions size_type get_next_size() const; and void set_next_size(size_type);
+      {
+      /*! Pool allocation
+       See the pair of functions size_type get_next_size() const; and void set_next_size(size_type);
        that allow users to explicitly read and write the next_size value.
-       This value is the number of chunks to request from the system
+       NextSize is the number of chunks to request from the system
        the next time that object needs to allocate system memory.
 
-       param RequestedSize value of this parameter is passed to the underlying Pool when it is created.
-       param NextSize value of this parameter is passed to the underlying Pool when it is created.
+       \param RequestedSize value of this parameter is passed to the underlying Pool when it is created.
+       \param NextSize value of this parameter is passed to the underlying Pool when it is created.
 
        \pre NextSize value should never be set to 0.
       */
-			}
+      }
     }; //  struct pool_type: Mutex
 
     typedef details::pool::singleton_default<pool_type> singleton;
