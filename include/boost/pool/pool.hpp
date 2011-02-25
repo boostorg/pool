@@ -92,12 +92,12 @@ struct default_user_allocator_new_delete
 
   static char * malloc BOOST_PREVENT_MACRO_SUBSTITUTION(const size_type bytes)
   { //! Attempts to allocate n bytes from the system. Returns 0 if out-of-memory
-		return new (std::nothrow) char[bytes];
-	}
+    return new (std::nothrow) char[bytes];
+  }
   static void free BOOST_PREVENT_MACRO_SUBSTITUTION(char * const block)
   { //! Attempts to de-allocate block.
     //! \pre Block must have been previously returned from a call to UserAllocator::malloc.
-		delete [] block;
+    delete [] block;
   }
 };
 
@@ -119,11 +119,11 @@ namespace details
 template <typename SizeType>
 class PODptr
 { //! PODptr is a class that pretends to be a "pointer" to different class types
-	//!  that don't really exist.  It provides member functions to access the "data"
-	//!  of the "object" it points to.  Since these "class" types are of variable
-	//!  size, and contains some information at the *end* of its memory
-	//!  (for alignment reasons),
-	//! PODptr must contain the size of this "class" as well as the pointer to this "object".
+  //!  that don't really exist.  It provides member functions to access the "data"
+  //!  of the "object" it points to.  Since these "class" types are of variable
+  //!  size, and contains some information at the *end* of its memory
+  //!  (for alignment reasons),
+  //! PODptr must contain the size of this "class" as well as the pointer to this "object".
 
   /*! \details A PODptr holds the location and size of a memory block allocated from the system. Each memory block is split logically into three sections:\n
 Chunk area. This section may be different sizes. PODptr does not care what the size of the chunks is, but it does care (and keep track of) the total size of the chunk area.\n
@@ -146,8 +146,8 @@ The member function valid can be used to test for validity.
 
     char * ptr_next_size() const
     {
-			return (ptr + sz - sizeof(size_type));
-		}
+      return (ptr + sz - sizeof(size_type));
+    }
     char * ptr_next_ptr() const
     {
       return (ptr_next_size() -
@@ -158,21 +158,21 @@ The member function valid can be used to test for validity.
     PODptr(char * const nptr, const size_type nsize)
     :ptr(nptr), sz(nsize)
     {
-			//! A PODptr may be created to point to a memory block by passing
-			//! the address and size of that memory block into the constructor.
-			//! A PODptr constructed in this way is valid.
-		}
+      //! A PODptr may be created to point to a memory block by passing
+      //! the address and size of that memory block into the constructor.
+      //! A PODptr constructed in this way is valid.
+    }
     PODptr()
     :  ptr(0), sz(0)
     { //! default constructor for PODptr will result in an invalid object.
-		}
+    }
 
     bool valid() const
     { //! A PODptr object is either valid or invalid.
       //! An invalid PODptr is analogous to a null pointer.
       //! \returns true if PODptr is valid, false if invalid.
-			return (begin() != 0);
-		}
+      return (begin() != 0);
+    }
     void invalidate()
     { //! Make object invalid.
       begin() = 0;
@@ -180,24 +180,24 @@ The member function valid can be used to test for validity.
     char * & begin()
     { //! Each PODptr keeps the address and size of its memory block.
       //! \returns The address of its memory block.
-			return ptr;
-	}
+      return ptr;
+  }
     char * begin() const
     { //! Each PODptr keeps the address and size of its memory block.
       //! \return The address of its memory block.
-			return ptr;
-		}
+      return ptr;
+    }
     char * end() const
     { //! \returns begin() plus element_size (a 'past the end' value).
-			return ptr_next_ptr();
-	  }
+      return ptr_next_ptr();
+    }
     size_type total_size() const
     { //! Each PODptr keeps the address and size of its memory block.
       //! The address may be read or written by the member functions begin.
       //! The size of the memory block may only be read,
       //! \returns size of the memory block.
-			return sz;
-		}
+      return sz;
+    }
     size_type element_size() const
     { //! \returns size of element pointer area.
       return (sz - sizeof(size_type) -
@@ -211,26 +211,22 @@ The member function valid can be used to test for validity.
     }
     char * & next_ptr() const
     {  //! \returns pointer to next pointer area.
-			return *(static_cast<char **>(static_cast<void*>(ptr_next_ptr())));
-		}
+      return *(static_cast<char **>(static_cast<void*>(ptr_next_ptr())));
+    }
 
     PODptr next() const
     { //! \returns next PODptr.
-			return PODptr<size_type>(next_ptr(), next_size());
-		}
+      return PODptr<size_type>(next_ptr(), next_size());
+    }
     void next(const PODptr & arg) const
     { //! Sets next PODptr.
       next_ptr() = arg.begin();
       next_size() = arg.total_size();
     }
 }; // class PODptr
-
 } // namespace details
 
-template <typename UserAllocator>
-//!  \tparam UserAllocator type - the method that the Pool will use to allocate memory from the system.
-class pool: protected simple_segregated_storage < typename UserAllocator::size_type >
-{/*! \class boost::pool
+/*!
   \brief A fast memory allocator that guarantees proper alignment of all allocated chunks.
   \details Whenever an object of type pool needs memory from the system,
   it will request it from its UserAllocator template parameter.
@@ -256,7 +252,12 @@ class pool: protected simple_segregated_storage < typename UserAllocator::size_t
   being allocated, the pool will backtrack just once, halving
   the chunk size and trying again.
 
+  \tparam UserAllocator type - the method that the Pool will use to allocate memory from the system.
+
 */
+template <typename UserAllocator>
+class pool: protected simple_segregated_storage < typename UserAllocator::size_type >
+{
   public:
     typedef UserAllocator user_allocator; //!< User allocator.
     typedef typename UserAllocator::size_type size_type;  //!< An unsigned integral type that can represent the size of the largest object to be allocated.
@@ -278,12 +279,12 @@ class pool: protected simple_segregated_storage < typename UserAllocator::size_t
 
     simple_segregated_storage<size_type> & store()
     { //! \returns pointer to store.
-			return *this;
-		}
+      return *this;
+    }
     const simple_segregated_storage<size_type> & store() const
     { //! \returns pointer to store.
-			return *this;
-		}
+      return *this;
+    }
     const size_type requested_size;
     size_type next_size;
     size_type start_size;
@@ -298,7 +299,7 @@ class pool: protected simple_segregated_storage < typename UserAllocator::size_t
     { //! \param chunk chunk to check if is from this pool.
       //! \param i memory chunk at i with element sizeof_i.
       //! \param sizeof_i element size (size of the chunk area of that block, not the total size of that block).
-			//! \returns true if chunk was allocated or may be returned.
+      //! \returns true if chunk was allocated or may be returned.
       //! as the result of a future allocation.
       //! Returns false if chunk was allocated from some other pool,
       //! or may be returned as the result of a future allocation from some other pool.
@@ -335,8 +336,8 @@ class pool: protected simple_segregated_storage < typename UserAllocator::size_t
     static void * & nextof(void * const ptr)
     { //! \returns Pointer dereferenced.
       //! (Provided and used for the sake of code readability :)
-			return *(static_cast<void **>(ptr));
-	  }
+      return *(static_cast<void **>(ptr));
+    }
 
   public:
     // pre: npartition_size != 0 && nnext_size != 0
@@ -345,19 +346,19 @@ class pool: protected simple_segregated_storage < typename UserAllocator::size_t
         const size_type nmax_size = 0)
     :
         list(0, 0), requested_size(nrequested_size), next_size(nnext_size), start_size(nnext_size),max_size(nmax_size)
-    { //! 	Constructs a new empty Pool that can be used to allocate chunks of size RequestedSize.
+    { //!   Constructs a new empty Pool that can be used to allocate chunks of size RequestedSize.
       //! \param nrequested_size  Requested chunk size
       //! \param  nnext_size parameter is of type size_type,
-		  //!   is the number of chunks to request from the system
-		  //!    the first time that object needs to allocate system memory.
-		  //!   The default is 32. This parameter may not be 0.
-		  //! \param nmax_size is the maximum size of ?
-		}
+      //!   is the number of chunks to request from the system
+      //!   the first time that object needs to allocate system memory.
+      //!   The default is 32. This parameter may not be 0.
+      //! \param nmax_size is the maximum size of ?
+    }
 
     ~pool()
-    { //! 	Destructs the Pool, freeing its list of memory blocks.
-			purge_memory();
-		}
+    { //!   Destructs the Pool, freeing its list of memory blocks.
+      purge_memory();
+    }
 
     // Releases memory blocks that don't have chunks allocated
     // pre: lists are ordered
@@ -375,22 +376,22 @@ class pool: protected simple_segregated_storage < typename UserAllocator::size_t
     }
     void set_next_size(const size_type nnext_size)
     { //! Set number of chunks to request from the system the next time that object needs to allocate system memory. This value should never be set to 0.
-			//! \returns nnext_size.
-			next_size = start_size = nnext_size;
-		}
+      //! \returns nnext_size.
+      next_size = start_size = nnext_size;
+    }
     size_type get_max_size() const
     { //! \returns max_size.
-			return max_size;
-		}
+      return max_size;
+    }
     void set_max_size(const size_type nmax_size)
     { //! Set max_size.
-			max_size = nmax_size;
-		}
+      max_size = nmax_size;
+    }
     size_type get_requested_size() const
-    { //! 	\returns the requested size passed into the constructor.
+    { //!   \returns the requested size passed into the constructor.
       //! (This value will not change during the lifetime of a Pool object).
-			return requested_size;
-	  }
+      return requested_size;
+    }
 
     // Both malloc and ordered_malloc do a quick inlined check first for any
     //  free chunks.  Only if we need to get another memory block do we call
@@ -412,7 +413,7 @@ class pool: protected simple_segregated_storage < typename UserAllocator::size_t
     void * ordered_malloc()
     { //! Same as malloc, only merges the free lists, to preserve order. Amortized O(1).
       //! \returns a free chunk from that block.
-		  //! If a new memory block cannot be allocated, returns 0. Amortized O(1).
+      //! If a new memory block cannot be allocated, returns 0. Amortized O(1).
 
       // Look for a non-empty storage
       if (!store().empty())
@@ -425,12 +426,12 @@ class pool: protected simple_segregated_storage < typename UserAllocator::size_t
     void * ordered_malloc(size_type n);
       //! Same as malloc, only allocates enough contiguous chunks to cover n * requested_size bytes. Amortized O(n).
       //! \returns a free chunk from that block.
-		  //! If a new memory block cannot be allocated, returns 0. Amortized O(1).
+      //! If a new memory block cannot be allocated, returns 0. Amortized O(1).
 
     // pre: 'chunk' must have been previously
     //        returned by *this.malloc().
     void free BOOST_PREVENT_MACRO_SUBSTITUTION(void * const chunk)
-    { //! 	Deallocates a chunk of memory. Note that chunk may not be 0. O(1).
+    { //!   Deallocates a chunk of memory. Note that chunk may not be 0. O(1).
       //! chunk must have been previously returned by t.malloc() or t.ordered_malloc().
       //! Assumes that chunk actually refers to a block of chunks
       //! spanning n * partition_sz bytes.
@@ -470,7 +471,7 @@ class pool: protected simple_segregated_storage < typename UserAllocator::size_t
     { //! Assumes that chunk actually refers to a block of chunks spanning n * partition_sz bytes;
       //! deallocates each chunk in that block.
       //! Note that chunk may not be 0. Order-preserving. O(N + n) where N is the size of the free list.
-			//! chunk must have been previously returned by t.malloc() or t.ordered_malloc().
+      //! chunk must have been previously returned by t.malloc() or t.ordered_malloc().
 
       const size_type partition_size = alloc_size();
       const size_type total_req_size = n * requested_size;
@@ -758,7 +759,7 @@ template <typename UserAllocator>
 void * pool<UserAllocator>::ordered_malloc(const size_type n)
 { //! Gets address of a chunk n, allocating new memory if not already available.
   //! \returns Address of chunk n if allocated ok.
-	//! \returns 0 if not enough memory for n chunks.
+  //! \returns 0 if not enough memory for n chunks.
 
   const size_type partition_size = alloc_size();
   const size_type total_req_size = n * requested_size;
@@ -824,8 +825,7 @@ void * pool<UserAllocator>::ordered_malloc(const size_type n)
 
     while (true)
     {
-      // if we're about to hit the end or
-      //  if we've found where "node" goes.
+      // if we're about to hit the end, or if we've found where "node" goes.
       if (prev.next_ptr() == 0
           || std::greater<void *>()(prev.next_ptr(), node.begin()))
         break;
