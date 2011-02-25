@@ -113,9 +113,10 @@ In general, use Pools when you need a more efficient way to do unusual memory co
 `pool_allocator` is a more general-purpose solution, geared towards
 efficiently servicing requests for any number of contiguous chunks.
 
-`fast_pool_allocator` is also a general-purpose solutionh
+`fast_pool_allocator` is also a general-purpose solution
 but is geared towards efficiently servicing requests for one chunk at a time;
 it will work for contiguous chunks, but not as well as pool_allocator.
+
 If you are seriously concerned about performance,
 use `fast_pool_allocator` when dealing with containers such as `std::list`,
 and use `pool_allocator` when dealing with containers such as `std::vector`.
