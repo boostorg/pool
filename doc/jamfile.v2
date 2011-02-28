@@ -166,14 +166,20 @@ boostbook standalone
 		<format>pdf:<xsl:param>boost.url.prefix=I:/boost-sandbox/guild/pool/libs/pool/doc/html
 		
 		<dependency>autodoc #
-      <dependency>css-install
-      <dependency>png-install
-      <dependency>svg-install
+    <dependency>css-install
+    <dependency>png-install
+    <dependency>svg-install
+    <dependency>pool-png-install
+    <dependency>pool-svg-install
    ;
-
-install pdf-install : standalone : <install-type>PDF <location>. <name>pool.pdf ;
 
 path-constant boost-root : [ modules.peek : BOOST ] ;
 install css-install : $(boost-root)/doc/src/boostbook.css : <location>html ;
+
 install png-install : [ glob $(boost-root)/doc/src/images/*.png $(boost-root)/boost.png ] : <location>html/images ;
 install svg-install : [ glob $(boost-root)/doc/src/images/*.svg ] : <location>html/images ;
+
+install pdf-install : standalone : <install-type>PDF <location>. <name>pool.pdf ;
+
+install pool-png-install : [ glob images/*.png ] : <location>html/images ;
+install pool-svg-install : [ glob images/*.svg ] : <location>html/images ;
