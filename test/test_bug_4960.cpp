@@ -6,7 +6,7 @@
  * file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt)
  */
 
-// Test of bug #3349 (https://svn.boost.org/trac/boost/ticket/3349)
+// Test of bug #4960 (https://svn.boost.org/trac/boost/ticket/4960)
 
 #include <boost/pool/pool_alloc.hpp>
 #include <vector>
