@@ -32,19 +32,20 @@ test-suite pool :
     [ run test_bug_4960.cpp ]
     [ run test_bug_1252.cpp ]
     [ run test_bug_2696.cpp ]
+    [ compile test_poisoned_macros.cpp ]
 
 #
 # The following tests test Boost.Pool's code with valgrind only if it's available:
 #
-    [ run test_gcd_lcm.cpp : : : [ check-target-builds valgrind_config_check : : <testing.launcher>"valgrind --error-exitcode=1" ] : test_gcd_lcm_valgrind ]
-    [ run test_simple_seg_storage.cpp  : : : [ check-target-builds valgrind_config_check : : <testing.launcher>"valgrind --error-exitcode=1" ] : test_simple_seg_storage_valgrind ]
-    [ run test_pool_alloc.cpp  : : : [ check-target-builds valgrind_config_check : : <testing.launcher>"valgrind --error-exitcode=1" ] : test_pool_alloc_valgrind ]
-    [ run pool_msvc_compiler_bug_test.cpp  : : : [ check-target-builds valgrind_config_check : : <testing.launcher>"valgrind --error-exitcode=1" ] : pool_msvc_compiler_bug_test_valgrind ]
-    [ run test_msvc_mem_leak_detect.cpp  : : : [ check-target-builds valgrind_config_check : : <testing.launcher>"valgrind --error-exitcode=1" ] : test_msvc_mem_leak_detect_valgrind ]
-    [ run test_bug_3349.cpp  : : : [ check-target-builds valgrind_config_check : : <testing.launcher>"valgrind --error-exitcode=1" ] : test_bug_3349_valgrind ]
-    [ run test_bug_4960.cpp  : : : [ check-target-builds valgrind_config_check : : <testing.launcher>"valgrind --error-exitcode=1" ] : test_bug_4960_valgrind ]
-    [ run test_bug_1252.cpp  : : : [ check-target-builds valgrind_config_check : : <testing.launcher>"valgrind --error-exitcode=1" ] : test_bug_1252_valgrind ]
-    [ run test_bug_2696.cpp  : : : [ check-target-builds valgrind_config_check : : <testing.launcher>"valgrind --error-exitcode=1" ] : test_bug_2696_valgrind ]
+    [ run test_gcd_lcm.cpp : : : [ check-target-builds valgrind_config_check : <testing.launcher>"valgrind --error-exitcode=1" : <build>no ] : test_gcd_lcm_valgrind ]
+    [ run test_simple_seg_storage.cpp  : : : [ check-target-builds valgrind_config_check : <testing.launcher>"valgrind --error-exitcode=1" : <build>no ] : test_simple_seg_storage_valgrind ]
+    [ run test_pool_alloc.cpp  : : : [ check-target-builds valgrind_config_check : <testing.launcher>"valgrind --error-exitcode=1" : <build>no  ] : test_pool_alloc_valgrind ]
+    [ run pool_msvc_compiler_bug_test.cpp  : : : [ check-target-builds valgrind_config_check : <testing.launcher>"valgrind --error-exitcode=1"  : <build>no ] : pool_msvc_compiler_bug_test_valgrind ]
+    [ run test_msvc_mem_leak_detect.cpp  : : : [ check-target-builds valgrind_config_check : <testing.launcher>"valgrind --error-exitcode=1" : <build>no  ] : test_msvc_mem_leak_detect_valgrind ]
+    [ run test_bug_3349.cpp  : : : [ check-target-builds valgrind_config_check : <testing.launcher>"valgrind --error-exitcode=1" : <build>no  ] : test_bug_3349_valgrind ]
+    [ run test_bug_4960.cpp  : : : [ check-target-builds valgrind_config_check : <testing.launcher>"valgrind --error-exitcode=1" : <build>no  ] : test_bug_4960_valgrind ]
+    [ run test_bug_1252.cpp  : : : [ check-target-builds valgrind_config_check : <testing.launcher>"valgrind --error-exitcode=1" : <build>no  ] : test_bug_1252_valgrind ]
+    [ run test_bug_2696.cpp  : : : [ check-target-builds valgrind_config_check : <testing.launcher>"valgrind --error-exitcode=1" : <build>no  ] : test_bug_2696_valgrind ]
     ;
 
 
