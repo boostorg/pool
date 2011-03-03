@@ -108,9 +108,9 @@ struct default_user_allocator_new_delete
   typedef std::ptrdiff_t difference_type; //!< A signed integral type that can represent the difference of any two pointers.
 
   static char * malloc BOOST_PREVENT_MACRO_SUBSTITUTION(const size_type bytes)
-  { return static_cast<char *>(std::malloc(bytes)); }
+  { return static_cast<char *>((std::malloc)(bytes)); }
   static void free BOOST_PREVENT_MACRO_SUBSTITUTION(char * const block)
-  { std::free(block); }
+  { (std::free)(block); }
 };
 
 namespace details
