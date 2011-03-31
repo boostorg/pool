@@ -10,36 +10,9 @@
 #define BOOST_OBJECT_POOL_HPP
 /*!
 \file
-\brief  provides a template type that can be used for fast and efficient memory allocation.
-It also provides automatic destruction of non-deallocated objects.\n
-For information on other pool-based interfaces, see the other pool interfaces.
-
-UserAllocator\n
-Defines the allocator that the underlying Pool will use to allocate memory from the system.
-See User Allocators for details.
-
-\details
-
-(&t)->~ObjectPool() Destructs the ObjectPool.\n
-~ElementType() is called for each allocated ElementType that has not been deallocated. O(N).\n\n
-
-Extensions to Public Interface\n
-
-Whenever an object of type ObjectPool needs memory from the system,
-it will request it from its UserAllocator template parameter.
-The amount requested is determined using a doubling algorithm;
-that is, each time more system memory is allocated,
-the amount of system memory requested is doubled.
-Users may control the doubling algorithm by using the following extensions.\n
-
-Additional constructor parameter\n
-
-Users may pass an additional constructor parameter to ObjectPool.
-This parameter is of type size_type, and is the number of chunks
-to request from the system the first time that
-object needs to allocate system memory.
-The default is 32. This parameter may not be 0.\n
-
+\brief  Provides a template type boost::object_pool<T, UserAllocator>
+that can be used for fast and efficient memory allocation of objects of type T.
+It also provides automatic destruction of non-deallocated objects.
 */
 
 #include <boost/pool/poolfwd.hpp>
@@ -66,9 +39,35 @@ The default is 32. This parameter may not be 0.\n
 
 namespace boost {
 
-/*! \tparam T type of object to allocate/deallocate.
+/*! \brief A template class
+that can be used for fast and efficient memory allocation of objects.
+It also provides automatic destruction of non-deallocated objects.
+
+\details
+
+@tparam T type of object to allocate/deallocate.
     \pre T must have a non-throwing destructor.
+
+@tparam UserAllocator\n
+Defines the allocator that the underlying Pool will use to allocate memory from the system.
+See User Allocators for details.
+
+Class object_pool is a template class
+that can be used for fast and efficient memory allocation of objects.
+It also provides automatic destruction of non-deallocated objects.
+
+When the object pool is destroyed, then the destructor for type T
+is called for each allocated T that has not yet been deallocated. O(N).
+
+Whenever an object of type ObjectPool needs memory from the system,
+it will request it from its UserAllocator template parameter.
+The amount requested is determined using a doubling algorithm;
+that is, each time more system memory is allocated,
+the amount of system memory requested is doubled.
+Users may control the doubling algorithm by the parameters passed
+to the object_pool's constructor.
 */
+
 template <typename T, typename UserAllocator>
 class object_pool: protected pool<UserAllocator>
 { //!
@@ -79,18 +78,20 @@ class object_pool: protected pool<UserAllocator>
     typedef typename pool<UserAllocator>::difference_type difference_type; //!< pool<UserAllocator>::difference_type
 
   protected:
+    //! \return The underlying boost:: \ref pool storage used by *this.
     pool<UserAllocator> & store()
-    { //! \return *this
+    { 
       return *this;
     }
+    //! \return The underlying boost:: \ref pool storage used by *this.
     const pool<UserAllocator> & store() const
-    { //! \return *this
+    { 
       return *this;
     }
 
     // for the sake of code readability :)
     static void * & nextof(void * const ptr)
-    { //! \returns dereferenced ptr (for the sake of code readability :)
+    { //! \returns The next memory block after ptr (for the sake of code readability :)
       return *(static_cast<void **>(ptr));
     }
 
@@ -99,9 +100,10 @@ class object_pool: protected pool<UserAllocator>
     :
     pool<UserAllocator>(sizeof(T), next_size, max_size)
     { //! Constructs a new (empty by default) ObjectPool.
-      //! \param next_size number of chunks to request from the system the next time that object needs to allocate system memory (default 32).
+      //! \param next_size Number of chunks to request from the system the next time that object needs to allocate system memory (default 32).
       //! \pre next_size != 0.
-      //! \param max_size maximum size of block.
+      //! \param max_size Maximum number of chunks to ever request from the system - this puts a cap on the doubling algorithm
+      //! used by the underlying pool.
     }
 
     ~object_pool();
@@ -109,28 +111,38 @@ class object_pool: protected pool<UserAllocator>
     // Returns 0 if out-of-memory.
     element_type * malloc BOOST_PREVENT_MACRO_SUBSTITUTION()
     { //! Allocates memory that can hold one object of type ElementType.
-      //! If out of memory, returns 0. Amortized O(1).
+      //!
+      //! If out of memory, returns 0. 
+      //!
+      //! Amortized O(1).
       return static_cast<element_type *>(store().ordered_malloc());
     }
     void free BOOST_PREVENT_MACRO_SUBSTITUTION(element_type * const chunk)
     { //! De-Allocates memory that holds a chunk of type ElementType.
+      //!
       //!  Note that p may not be 0.\n
+      //!
       //! Note that the destructor for p is not called. O(N).
       store().ordered_free(chunk);
     }
     bool is_from(element_type * const chunk) const
-    { /*! \returns true  if p was allocated from u or
-      may be returned as the result of a future allocation from u.\n
-      Returns false if p was allocated from some other pool or
+    { /*! \returns true  if chunk was allocated from *this or
+      may be returned as the result of a future allocation from *this.
+
+      Returns false if chunk was allocated from some other pool or
       may be returned as the result of a future allocation from some other pool.
+
       Otherwise, the return value is meaningless.
+
       \note This function may NOT be used to reliably test random pointer values!
     */
       return store().is_from(chunk);
     }
 
     element_type * construct()
-    { //! Constructs a new
+    { //! \returns A pointer to an object of type T, allocated in memory from the underlying pool
+      //! and default constructed.  The returned objected can be freed by a call to \ref destroy.
+      //! Otherwise the returned object will be automatically destroyed when *this is destroyed.
       element_type * const ret = (malloc)();
       if (ret == 0)
         return ret;
@@ -157,19 +169,24 @@ class object_pool: protected pool<UserAllocator>
 #endif
 
     void destroy(element_type * const chunk)
-    { //! destroy a chunk. (== p->~ElementType(); t.free(p);)
-      //! \pre p must have been previously allocated from t.
+    { //! Destroys an object allocated with \ref construct. 
+      //!
+      //! Equivalent to:
+      //!
+      //! p->~ElementType(); this->free(p);
+      //!
+      //! \pre p must have been previously allocated from *this via a call to \ref construct.
       chunk->~T();
       (free)(chunk);
     }
 
     size_type get_next_size() const
-    { //! \returns next_size.
+    { //! \returns The number of chunks that will be allocated next time we run out of memory.
       return store().get_next_size();
     }
     void set_next_size(const size_type x)
-    { //! Set new next_size.
-      //! \param x wanted next_size (!= 0).
+    { //! Set a new number of chunks to allocate the next time we run out of memory.
+      //! \param x wanted next_size (must not be zero).
       store().set_next_size(x);
     }
 };
