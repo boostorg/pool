@@ -45,12 +45,12 @@ It also provides automatic destruction of non-deallocated objects.
 
 \details
 
-@tparam T type of object to allocate/deallocate.
-    \pre T must have a non-throwing destructor.
+<b>T</b> The type of object to allocate/deallocate.
+T must have a non-throwing destructor.
 
-@tparam UserAllocator\n
+<b>UserAllocator</b>
 Defines the allocator that the underlying Pool will use to allocate memory from the system.
-See User Allocators for details.
+See <a href="boost_pool/pool/pooling.html#boost_pool.pool.pooling.user_allocator">User Allocators</a> for details.
 
 Class object_pool is a template class
 that can be used for fast and efficient memory allocation of objects.

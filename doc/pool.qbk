@@ -1012,6 +1012,31 @@ block is properly aligned for an array of void *] [] [] [Interleaves a free list
 
 [endsect] [/section:simple_segregated_storage]
 
+[section:user_allocator The UserAllocator Concept]
+
+Pool objects need to request memory blocks from the system, which the Pool then splits into chunks to allocate 
+to the user. By specifying a UserAllocator template parameter to various Pool interfaces, users can control how 
+those system memory blocks are allocated.
+
+In the following table, /UserAllocator/ is a User Allocator type, 
+/block/ is a value of type char *, and 
+/n/ is a value of type UserAllocator::size_type
+
+[table UserAllocator Requirements
+[[Expression][Result][Description]]
+[[UserAllocator::size_type][][An unsigned integral type that can represent the size of the largest object to be allocated.]]
+[[UserAllocator::difference_type][][A signed integral type that can represent the difference of any two pointers.]]
+[[UserAllocator::malloc(n)][char *][Attempts to allocate n bytes from the system. Returns 0 if out-of-memory.]]
+[[UserAllocator::free(block)][void][block must have been previously returned from a call to UserAllocator::malloc.]]
+]
+
+There are two UserAllocator classes provided in this library: 
+[classref boost::default_user_allocator_new_delete `default_user_allocator_new_delete`] and 
+[classref boost::default_user_allocator_malloc_free `default_user_allocator_malloc_free`],
+both in pool.hpp. The default value for the template parameter UserAllocator is always 
+[classref boost::default_user_allocator_new_delete `default_user_allocator_new_delete`].
+
+[endsect][/section:user_allocator The UserAllocator Concept]
 [endsect] [/section:pooling Pool in more depth]
 
 [xinclude autodoc.xml] [/ Boost.Pool Reference section, using Doxygen reference documentation.]

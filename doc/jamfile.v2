@@ -135,7 +135,7 @@ boostbook standalone
 		<format>html:<xsl:param>html.cellspacing=3 # pixels
 		# Vertical spacing in table cells.
 		<format>html:<xsl:param>html.cellpadding=5 # pixels
-		#  Not sure if these are right way round?		
+      <format>html:<xsl:param>boost.max.id.part.length=40
 
 		# PDF Options:
 		# ============

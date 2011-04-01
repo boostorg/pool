@@ -84,7 +84,9 @@
  namespace boost
 {
 
-//!  Default User allocator new used as default template parameter for UserAllocator.  Uese new and delete.
+//! \brief Default allocator used as default template parameter for 
+//! a <a href="boost_pool/pool/pooling.html#boost_pool.pool.pooling.user_allocator">UserAllocator</a>
+//! template parameter.  Uses new and delete.
 struct default_user_allocator_new_delete
 {
   typedef std::size_t size_type; //!< An unsigned integral type that can represent the size of the largest object to be allocated.
@@ -101,8 +103,10 @@ struct default_user_allocator_new_delete
   }
 };
 
- //!  Default User allocator malloc used as template parameter.
- struct default_user_allocator_malloc_free
+//! \brief <a href="boost_pool/pool/pooling.html#boost_pool.pool.pooling.user_allocator">UserAllocator</a>
+//! used as template parameter for \ref pool and \ref object_pool.
+//! Uses malloc and free internally.
+struct default_user_allocator_malloc_free
 {
   typedef std::size_t size_type; //!< An unsigned integral type that can represent the size of the largest object to be allocated.
   typedef std::ptrdiff_t difference_type; //!< A signed integral type that can represent the difference of any two pointers.
