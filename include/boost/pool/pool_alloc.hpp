@@ -12,36 +12,30 @@
 
 /*!
   \file
-  \brief Standard Pool allocators.
-  \details  provides two template types that can be used for fast and efficient memory allocation.
+  \brief C++ Standard Library compatible pool-based allocators.
+  \details  This header provides two template types - 
+  \ref pool_allocator and \ref fast_pool_allocator -
+  that can be used for fast and efficient memory allocation
+  in conjunction with the C++ Standard Library containers.
+
   These types both satisfy the Standard Allocator requirements [20.1.5]
   and the additional requirements in [20.1.5/4],
-  so they can be used with Standard or user-supplied containers.\n
-  For information on other pool-based interfaces, see the other pool interfaces.
-
-  \n\n
-  Both of the pool allocators above satisfy all Standard Allocator requirements,
-  as laid out in the Standard [20.1.5].
-  They also both satisfy the additional requirements found in [20.1.5/4];
-  this permits their usage with any Standard-compliant container.
+  so they can be used with either Standard or user-supplied containers.
 
   In addition, the fast_pool_allocator also provides an additional allocation
   and an additional deallocation function:
 
-PoolAlloc  fast_pool_allocator<T, UserAllocator>\n
-p          value of type T *\n
-\n
-
-Additional allocation/deallocation functions (fast_pool_allocator only)\n
-Expression Return Type     Semantic Equivalence\n
-PoolAlloc::allocate()      T * PoolAlloc::allocate(1)\n
-PoolAlloc::deallocate(p)   void PoolAlloc::deallocate(p, 1)\n
+<table>
+<tr><th>Expression</th><th>Return Type</th><th>Semantic Equivalence<th></tr>
+<tr><td><tt>PoolAlloc::allocate()</tt></td><td><tt>T *</tt></td><td><tt>PoolAlloc::allocate(1)</tt></tr>
+<tr><td><tt>PoolAlloc::deallocate(p)</tt></td><td>void</tt></td><td><tt>PoolAlloc::deallocate(p, 1)</tt></tr>
+</table>
 
 The typedef user_allocator publishes the value of the UserAllocator template parameter.
 
-Notes\n
+<b>Notes</b>
 
-If the allocation functions run out of memory, they will throw std::bad_alloc.
+If the allocation functions run out of memory, they will throw <tt>std::bad_alloc</tt>.
 
 The underlying Pool type used by the allocators is accessible through the Singleton Pool Interface.
 The identifying tag used for pool_allocator is pool_allocator_tag,
@@ -54,23 +48,22 @@ Since the size of T is used to determine the type of the underlying Pool,
 each allocator for different types of the same size will share the same underlying pool.
 The tag class prevents pools from being shared between pool_allocator and fast_pool_allocator.
 For example, on a system where
-sizeof(int) == sizeof(void *), pool_allocator<int> and pool_allocator<void *>
+<tt>sizeof(int) == sizeof(void *)</tt>, <tt>pool_allocator<int></tt> and <tt>pool_allocator<void *></tt>
 will both allocate/deallocate from/to the same pool.
 
 If there is only one thread running before main() starts and after main() ends,
-then both allocators are completely thread-safe.\n
+then both allocators are completely thread-safe.
 
-Compiler and STL Notes\n
+<b>Compiler and STL Notes</b>
 
 A number of common STL libraries contain bugs in their using of allocators.
 Specifically, they pass null pointers to the deallocate function,
 which is explicitly forbidden by the Standard [20.1.5 Table 32].
 PoolAlloc will work around these libraries if it detects them;
-currently, workarounds are in place for:\n
-
+currently, workarounds are in place for:
 Borland C++ (Builder and command-line compiler)
-with default (RogueWave) library, ver. 5 and earlier\n
-STLport (with any compiler), ver. 4.0 and earlier\n
+with default (RogueWave) library, ver. 5 and earlier,
+STLport (with any compiler), ver. 4.0 and earlier.
 */
 
 // std::numeric_limits
@@ -112,24 +105,32 @@ unsigned debug_info<b>::allocated = 0;
 
 #endif
 
- //! Tag to identify pool_allocator when used as template parameter.
+ //! Simple tag type used by pool_allocator as an argument to the
+ //! underlying singleton_pool.
  struct pool_allocator_tag
 {
 };
 
-/*!  Allocate a pool of memory.
-  \tparam T type of object to allocate/deallocate.
-  \tparam UserAllocator. Defines the method that the underlying Pool will use to allocate memory from the system. See User Allocators for details.
-  \tparam Mutex Allows the user to determine the type of synchronization to be used on the underlying singleton pool. See the extensions to the public interface of singleton pool for more information.
-  \tparam NextSize The value of this parameter is passed to the underlying Pool when it is created.
-  \tparam MaxSize Limit on the maximum size used.
+/*!  \brief A C++ Standard Library conforming allocator, based on an underlying pool.
+
+  Template parameters for pool_allocator are defined as follows:
+
+  <b>T</b> Type of object to allocate/deallocate.
+
+  <b>UserAllocator</B>. Defines the method that the underlying Pool will use to allocate memory from the system. See 
+  <a href="boost_pool/pool/pooling.html#boost_pool.pool.pooling.user_allocator">User Allocators</a> for details.
+
+  <b>Mutex</b> Allows the user to determine the type of synchronization to be used on the underlying singleton_pool. 
+
+  <b>NextSize</b> The value of this parameter is passed to the underlying singleton_pool when it is created.
+
+  <b>MaxSize</b> Limit on the maximum size used.
 */
 template <typename T,
     typename UserAllocator,
     typename Mutex,
     unsigned NextSize,
     unsigned MaxSize >
-
 class pool_allocator
 {
   public:
@@ -145,10 +146,12 @@ class pool_allocator
     typedef typename pool<UserAllocator>::size_type size_type;
     typedef typename pool<UserAllocator>::difference_type difference_type;
 
-    /*!
-       TODO explanation of use of rebind needed (and other places too).
-       \tparam U ???
-    */
+    //! \brief Nested class rebind allows for transformation from
+    //! pool_allocator<T> to pool_allocator<U>.
+    //!
+    //! Nested class rebind allows for transformation from
+    //! pool_allocator<T> to pool_allocator<U> via the member
+    //! typedef other.
     template <typename U>
     struct rebind
     { //
@@ -157,12 +160,12 @@ class pool_allocator
 
   public:
     pool_allocator()
-    { /*! Construction of default singleton_pool IFF an
-       instance of this allocator is constructed during global initialization.
-         Required to ensure construction of singleton_pool IFF an
+    { /*! Results in default construction of the underlying singleton_pool IFF an
+       instance of this allocator is constructed during global initialization (
+         required to ensure construction of singleton_pool IFF an
          instance of this allocator is constructed during global
          initialization. See ticket #2359 for a complete explanation at
-         http://svn.boost.org/trac/boost/ticket/2359 .
+         http://svn.boost.org/trac/boost/ticket/2359) .
        */
       singleton_pool<pool_allocator_tag, sizeof(T), UserAllocator, Mutex,
                      NextSize, MaxSize>::is_from(0);
@@ -175,8 +178,8 @@ class pool_allocator
     // not explicit, mimicking std::allocator [20.4.1]
     template <typename U>
     pool_allocator(const pool_allocator<U, UserAllocator, Mutex, NextSize, MaxSize> &)
-    { /*! Construction of singleton_pool using template U.
-         Required to ensure construction of singleton_pool IFF an
+    { /*! Results in the default construction of the underlying singleton_pool, this
+         is required to ensure construction of singleton_pool IFF an
          instance of this allocator is constructed during global
          initialization. See ticket #2359 for a complete explanation
          at http://svn.boost.org/trac/boost/ticket/2359 .
@@ -244,12 +247,9 @@ class pool_allocator
     }
 };
 
-/*! pool_allocator Pool Memory Allocator.
+/*! \brief Specialization of pool_allocator<void>.
 
-  \tparam UserAllocator. Defines the method that the underlying Pool will use to allocate memory from the system. See User Allocators for details.
-  \tparam Mutex Allows the user to determine the type of synchronization to be used on the underlying singleton pool. See the extensions to the public interface of singleton pool for more information.
-  \tparam NextSize The value of this parameter is passed to the underlying Pool when it is created.
-  \tparam MaxSize Limit on the maximum size used.
+Specialization of pool_allocator for type void: required by the standard to make this a conforming allocator type.
 */
 template<
     typename UserAllocator,
@@ -262,34 +262,48 @@ public:
     typedef void*       pointer;
     typedef const void* const_pointer;
     typedef void        value_type;
-    //! Need explanation of rebind. TODO.
-    //! \tparam U unknown tempalte parameter.
-    template <class U> struct rebind
+    //! \brief Nested class rebind allows for transformation from
+    //! pool_allocator<T> to pool_allocator<U>.
+    //!
+    //! Nested class rebind allows for transformation from
+    //! pool_allocator<T> to pool_allocator<U> via the member
+    //! typedef other.
+    template <class U> 
+    struct rebind
     {
        typedef pool_allocator<U, UserAllocator, Mutex, NextSize, MaxSize> other;
     };
 };
 
-//! Tag to identify pool_allocator when used as template parameter.
+//! Simple tag type used by fast_pool_allocator as a template parameter to the underlying singleton_pool.
 struct fast_pool_allocator_tag
 {
 };
 
- /*! Fast Pool memory allocator.
-  `pool_allocator` is a more general-purpose solution, geared towards
-  efficiently servicing requests for any number of contiguous chunks.
-  `fast_pool_allocator` is also a general-purpose solution,
-  but is geared towards efficiently servicing requests for one chunk at a time;
-  it will work for contiguous chunks, but not as well as pool_allocator.
-  If you are seriously concerned about performance,
-  use fast_pool_allocator when dealing with containers such as std::list,
-  and use pool_allocator when dealing with containers such as std::vector.
+ /*! \brief A C++ Standard Library conforming allocator geared towards allocating single chunks.
 
-  \tparam T type of object to allocate/deallocate.
-  \tparam UserAllocator. Defines the method that the underlying Pool will use to allocate memory from the system. See User Allocators for details.
-  \tparam Mutex Allows the user to determine the type of synchronization to be used on the underlying singleton pool. See the extensions to the public interface of singleton pool for more information.
-  \tparam NextSize The value of this parameter is passed to the underlying Pool when it is created.
-  \tparam MaxSize Limit on the maximum size used.
+  While class template <tt>pool_allocator</tt> is a more general-purpose solution geared towards
+  efficiently servicing requests for any number of contiguous chunks,
+  <tt>fast_pool_allocator</tt> is also a general-purpose solution,
+  but is geared towards efficiently servicing requests for one chunk at a time;
+  it will work for contiguous chunks, but not as well as <tt>pool_allocator</tt>.
+
+  If you are seriously concerned about performance,
+  use <tt>fast_pool_allocator</tt> when dealing with containers such as <tt>std::list</tt>,
+  and use <tt>pool_allocator</tt> when dealing with containers such as <tt>std::vector</tt>.
+
+  The template parameters are defined as follows:
+
+  <b>T</b> Type of object to allocate/deallocate.
+
+  <b>UserAllocator</b>. Defines the method that the underlying Pool will use to allocate memory from the system. 
+  See <a href="boost_pool/pool/pooling.html#boost_pool.pool.pooling.user_allocator">User Allocators</a> for details.
+
+  <b>Mutex</b> Allows the user to determine the type of synchronization to be used on the underlying <tt>singleton_pool</tt>.
+
+  <b>NextSize</b> The value of this parameter is passed to the underlying Pool when it is created.
+
+  <b>MaxSize</b> Limit on the maximum size used.
  */
 
 template <typename T,
@@ -312,8 +326,12 @@ class fast_pool_allocator
     typedef typename pool<UserAllocator>::size_type size_type;
     typedef typename pool<UserAllocator>::difference_type difference_type;
 
-    //!   TODO rebind description needed.
-    //! \tparam U not known.  TODO
+    //! \brief Nested class rebind allows for transformation from
+    //! fast_pool_allocator<T> to fast_pool_allocator<U>.
+    //!
+    //! Nested class rebind allows for transformation from
+    //! fast_pool_allocator<T> to fast_pool_allocator<U> via the member
+    //! typedef other.
     template <typename U>
     struct rebind
     {
@@ -323,10 +341,10 @@ class fast_pool_allocator
   public:
     fast_pool_allocator()
     {
-      // Required to ensure construction of singleton_pool IFF an
-      // instace of this allocator is constructed during global
-      // initialization. See ticket #2359 for a complete explanation
-      // at http://svn.boost.org/trac/boost/ticket/2359 .
+      //! Ensures construction of the underlying singleton_pool IFF an
+      //! instance of this allocator is constructed during global
+      //! initialization. See ticket #2359 for a complete explanation
+      //! at http://svn.boost.org/trac/boost/ticket/2359 .
       singleton_pool<fast_pool_allocator_tag, sizeof(T),
                      UserAllocator, Mutex, NextSize, MaxSize>::is_from(0);
     }
@@ -336,26 +354,14 @@ class fast_pool_allocator
     // Default assignment operator used.
 
     // Not explicit, mimicking std::allocator [20.4.1]
-
-    /*!  Allocate pool using fast method.
-
-         Required to ensure construction of singleton_pool IFF an
-         instance of this allocator is constructed during global
-         initialization. See ticket #2359 for a complete explanation
-         at http://svn.boost.org/trac/boost/ticket/2359 .
-
-       \tparam U not known.  TODO
-
-    */
-
     template <typename U>
     fast_pool_allocator(
         const fast_pool_allocator<U, UserAllocator, Mutex, NextSize, MaxSize> &)
     {
-      // Required to ensure construction of singleton_pool IFF an
-      // instance of this allocator is constructed during global
-      // initialization. See ticket #2359 for a complete explanation
-      // at http://svn.boost.org/trac/boost/ticket/2359 .
+      //! Ensures construction of the underlying singleton_pool IFF an
+      //! instance of this allocator is constructed during global
+      //! initialization. See ticket #2359 for a complete explanation
+      //! at http://svn.boost.org/trac/boost/ticket/2359 .
       singleton_pool<fast_pool_allocator_tag, sizeof(T),
                      UserAllocator, Mutex, NextSize, MaxSize>::is_from(0);
     }
@@ -411,8 +417,6 @@ class fast_pool_allocator
     }
     static void deallocate(const pointer ptr, const size_type n)
     { //! Deallocate memory.
-    //! \param ptr  TODO
-    //! \param n TODO.
 
 #ifdef BOOST_NO_PROPER_STL_DEALLOCATE
       if (ptr == 0 || n == 0)
@@ -432,16 +436,9 @@ class fast_pool_allocator
     }
 };
 
-/*!  fast_pool_allocator is a general-purpose solution but is geared towards efficiently servicing requests for one chunk at a
-   time; it will work for contiguous chunks, but not as well as pool_allocator.\n
-   If you are seriously concerned about performance, use
-   fast_pool_allocator when dealing with containers such as std::list, and use pool_allocator when dealing with containers
-   such as std::vector.
+/*!  \brief Specialization of fast_pool_allocator<void>.
 
-  \tparam  UserAllocator Defines the method that the underlying Pool will use to allocate memory from the system. See User Allocators for details.
-  \tparam Mutex Allows the user to determine the type of synchronization to be used on the underlying singleton pool. See the extensions to the public interface of singleton pool for more information.
-  \tparam NextSize The value of this parameter is passed to the underlying Pool when it is created.
-  \tparam MaxSize Limit on the maximum size used.
+Specialization of fast_pool_allocator<void> required to make the allocator standard-conforming.
 */
 template<
     typename UserAllocator,
@@ -455,9 +452,12 @@ public:
     typedef const void* const_pointer;
     typedef void        value_type;
 
-    /*! rebind TODO need explanation of rebind as well.
-    \tparam U  unknown template parameter
-    */
+    //! \brief Nested class rebind allows for transformation from
+    //! fast_pool_allocator<T> to fast_pool_allocator<U>.
+    //!
+    //! Nested class rebind allows for transformation from
+    //! fast_pool_allocator<T> to fast_pool_allocator<U> via the member
+    //! typedef other.
     template <class U> struct rebind
     {
         typedef fast_pool_allocator<U, UserAllocator, Mutex, NextSize, MaxSize> other;
