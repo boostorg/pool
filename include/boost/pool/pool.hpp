@@ -55,11 +55,9 @@
 
 /*!
   \file
-  \brief Fast memory allocator.
-  \details Fast memory allocator that guarantees proper alignment of all allocated chunks.
-  Provides two UserAllocator classes and a template class pool,
-  which extends and generalizes the framework provided by the simple segregated storage solution.
-  For information on other pool-based interfaces, see the other pool interfaces.
+  \brief Provides class \ref pool: a fast memory allocator that guarantees proper alignment of all allocated chunks,
+  and which extends and generalizes the framework provided by the simple segregated storage solution.
+  Also provides two UserAllocator classes which can be used in conjuction with \ref pool.
 */
 
 /*!
@@ -84,7 +82,7 @@
  namespace boost
 {
 
-//! \brief Default allocator used as default template parameter for 
+//! \brief Allocator used as the default template parameter for 
 //! a <a href="boost_pool/pool/pooling.html#boost_pool.pool.pooling.user_allocator">UserAllocator</a>
 //! template parameter.  Uses new and delete.
 struct default_user_allocator_new_delete
@@ -129,10 +127,17 @@ class PODptr
   //!  (for alignment reasons),
   //! PODptr must contain the size of this "class" as well as the pointer to this "object".
 
-  /*! \details A PODptr holds the location and size of a memory block allocated from the system. Each memory block is split logically into three sections:\n
-Chunk area. This section may be different sizes. PODptr does not care what the size of the chunks is, but it does care (and keep track of) the total size of the chunk area.\n
-Next pointer. This section is always the same size for a given SizeType. It holds a pointer to the location of the next memory block in the memory block list, or 0 if there is no such block.\n
-Next size. This section is always the same size for a given SizeType. It holds the size of the next memory block in the memory block list.\n
+  /*! \details A PODptr holds the location and size of a memory block allocated from the system. 
+  Each memory block is split logically into three sections:
+
+  <b>Chunk area</b>. This section may be different sizes. PODptr does not care what the size of the chunks is, 
+  but it does care (and keep track of) the total size of the chunk area.
+
+  <b>Next pointer</b>. This section is always the same size for a given SizeType. It holds a pointer 
+  to the location of the next memory block in the memory block list, or 0 if there is no such block.
+
+  <b>Next size</b>. This section is always the same size for a given SizeType. It holds the size of the 
+  next memory block in the memory block list.
 
 The PODptr class just provides cleaner ways of dealing with raw memory blocks.
 
@@ -232,13 +237,14 @@ The member function valid can be used to test for validity.
 
 /*!
   \brief A fast memory allocator that guarantees proper alignment of all allocated chunks.
+
   \details Whenever an object of type pool needs memory from the system,
   it will request it from its UserAllocator template parameter.
   The amount requested is determined using a doubling algorithm;
   that is, each time more system memory is allocated,
   the amount of system memory requested is doubled.
 
-  Users may control the doubling algorithm by using the following foobar extensions:
+  Users may control the doubling algorithm by using the following extensions:
 
   Users may pass an additional constructor parameter to pool.
   This parameter is of type size_type,
@@ -256,7 +262,14 @@ The member function valid can be used to test for validity.
   being allocated, the pool will backtrack just once, halving
   the chunk size and trying again.
 
-  \tparam UserAllocator type - the method that the Pool will use to allocate memory from the system.
+  <b>UserAllocator type</b> - the method that the Pool will use to allocate memory from the system.
+
+  There are essentially two ways to use class pool: the client can call \ref malloc() and \ref free() to allocate
+  and free single chunks of memory, this is the most efficient way to use a pool, but does not allow for
+  the efficient allocation of arrays of chunks.  Alternatively, the client may call \ref ordered_malloc() and \ref
+  ordered_free(), in which case the free list is maintained in an ordered state, and efficient allocation of arrays
+  of chunks are possible.  However, this latter option can suffer from poor performance when large numbers of
+  allocations are performed.
 
 */
 template <typename UserAllocator>
@@ -305,9 +318,11 @@ class pool: protected simple_segregated_storage < typename UserAllocator::size_t
       //! \param sizeof_i element size (size of the chunk area of that block, not the total size of that block).
       //! \returns true if chunk was allocated or may be returned.
       //! as the result of a future allocation.
+      //!
       //! Returns false if chunk was allocated from some other pool,
       //! or may be returned as the result of a future allocation from some other pool.
       //! Otherwise, the return value is meaningless.
+      //!
       //! Note that this function may not be used to reliably test random pointer values.
 
       // We use std::less_equal and std::less to test 'chunk'
@@ -356,7 +371,7 @@ class pool: protected simple_segregated_storage < typename UserAllocator::size_t
       //!   is the number of chunks to request from the system
       //!   the first time that object needs to allocate system memory.
       //!   The default is 32. This parameter may not be 0.
-      //! \param nmax_size is the maximum size of ?
+      //! \param nmax_size is the maximum number of chunks to allocate in one block.
     }
 
     ~pool()
@@ -436,7 +451,8 @@ class pool: protected simple_segregated_storage < typename UserAllocator::size_t
     //        returned by *this.malloc().
     void free BOOST_PREVENT_MACRO_SUBSTITUTION(void * const chunk)
     { //!   Deallocates a chunk of memory. Note that chunk may not be 0. O(1).
-      //! chunk must have been previously returned by t.malloc() or t.ordered_malloc().
+      //!
+      //! Chunk must have been previously returned by t.malloc() or t.ordered_malloc().
       //! Assumes that chunk actually refers to a block of chunks
       //! spanning n * partition_sz bytes.
       //! deallocates each chunk in that block.
@@ -448,6 +464,7 @@ class pool: protected simple_segregated_storage < typename UserAllocator::size_t
     //        returned by *this.malloc().
     void ordered_free(void * const chunk)
     { //! Same as above, but is order-preserving.
+      //!
       //! Note that chunk may not be 0. O(N) with respect to the size of the free list.
       //! chunk must have been previously returned by t.malloc() or t.ordered_malloc().
       store().ordered_free(chunk);
@@ -457,6 +474,7 @@ class pool: protected simple_segregated_storage < typename UserAllocator::size_t
     //        returned by *this.malloc(n).
     void free BOOST_PREVENT_MACRO_SUBSTITUTION(void * const chunks, const size_type n)
     { //! Assumes that chunk actually refers to a block of chunks.
+      //!
       //! chunk must have been previously returned by t.ordered_malloc(n)
       //! spanning n * partition_sz bytes.
       //! Deallocates each chunk in that block.
@@ -474,6 +492,7 @@ class pool: protected simple_segregated_storage < typename UserAllocator::size_t
     void ordered_free(void * const chunks, const size_type n)
     { //! Assumes that chunk actually refers to a block of chunks spanning n * partition_sz bytes;
       //! deallocates each chunk in that block.
+      //!
       //! Note that chunk may not be 0. Order-preserving. O(N + n) where N is the size of the free list.
       //! chunk must have been previously returned by t.malloc() or t.ordered_malloc().
 
@@ -626,6 +645,7 @@ template <typename UserAllocator>
 bool pool<UserAllocator>::purge_memory()
 { //! pool must be ordered.
   //! Frees every memory block.
+  /!
   //! This function invalidates any pointers previously returned
   //! by allocation functions of t.
   //! \returns true if at least one memory block was freed.
