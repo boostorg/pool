@@ -151,6 +151,31 @@ class object_pool: protected pool<UserAllocator>
       return ret;
     }
 
+
+#if defined(BOOST_DOXYGEN)
+    template <class Arg1, ... class ArgN>
+    element_type * construct(Arg1&, ... ArgN&)
+    {
+       //! \returns A pointer to an object of type T, allocated in memory from the underlying pool
+       //! and constructed from arguments Arg1 to ArgN.  The returned objected can be freed by a call to \ref destroy.
+       //! Otherwise the returned object will be automatically destroyed when *this is destroyed.
+       //!
+       //! \note Since the number and type of arguments to this function is totally arbitrary, a simple system has been 
+       //! set up to automatically generate template construct functions. This system is based on the macro preprocessor 
+       //! m4, which is standard on UNIX systems and also available for Win32 systems.\n\n
+       //! detail/pool_construct.m4, when run with m4, will create the file detail/pool_construct.ipp, which only defines 
+       //! the construct functions for the proper number of arguments. The number of arguments may be passed into the 
+       //! file as an m4 macro, NumberOfArguments; if not provided, it will default to 3.\n\n
+       //! For each different number of arguments (1 to NumberOfArguments), a template function is generated. There 
+       //! are the same number of template parameters as there are arguments, and each argument's type is a reference 
+       //! to that (possibly cv-qualified) template argument. Each possible permutation of the cv-qualifications is also generated.\n\n
+       //! Because each permutation is generated for each possible number of arguments, the included file size grows 
+       //! exponentially in terms of the number of constructor arguments, not linearly. For the sake of rational 
+       //! compile times, only use as many arguments as you need.\n\n
+       //! detail/pool_construct.bat and detail/pool_construct.sh are also provided to call m4, defining NumberOfArguments 
+       //! to be their command-line parameter. See these files for more details.
+    }
+#else
 // Include automatically-generated file for family of template construct() functions.
 // Copy .inc renamed .ipp to conform to Doxygen include filename expectations, PAB 12 Jan 11.
 // But still get Doxygen warning:
@@ -167,7 +192,7 @@ class object_pool: protected pool<UserAllocator>
 #else
 #   include <boost/pool/detail/pool_construct_simple.ipp>
 #endif
-
+#endif
     void destroy(element_type * const chunk)
     { //! Destroys an object allocated with \ref construct. 
       //!

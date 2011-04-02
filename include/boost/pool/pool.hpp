@@ -645,7 +645,7 @@ template <typename UserAllocator>
 bool pool<UserAllocator>::purge_memory()
 { //! pool must be ordered.
   //! Frees every memory block.
-  /!
+  //!
   //! This function invalidates any pointers previously returned
   //! by allocation functions of t.
   //! \returns true if at least one memory block was freed.

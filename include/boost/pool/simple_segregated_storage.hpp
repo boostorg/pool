@@ -12,9 +12,9 @@
 /*!
   \file
   \brief Simple Segregated Storage.
-  \details Simple Segregated Storage Implementation.
-  Simple Segregated Storage is the basic idea behind the Boost Pool library.
-  Simple Segregated Storage is the simplest, and probably the fastest,
+  \details A simple segregated storage implementation:
+  simple segregated storage is the basic idea behind the Boost Pool library.
+  Simple segregated storage is the simplest, and probably the fastest,
   memory allocation/deallocation algorithm.
   It begins by partitioning a memory block into fixed-size chunks.
   Where the block comes from is not important until implementation time.
@@ -33,11 +33,24 @@
 
 namespace boost {
 
-/*!
-  Simple Segregated Storage is the simplest, and probably the fastest,
-  memory allocation/deallocation algorithm.
-  It begins by partitioning a memory block into fixed-size chunks.
-  Where the block comes from is not important until implementation time.
+/*! 
+
+\brief Simple Segregated Storage is the simplest, and probably the fastest,
+memory allocation/deallocation algorithm.  It is responsible for
+partitioning a memory block into fixed-size chunks: where the block comes from 
+is determined by the client of the class.
+
+\details Template class simple_segregated_storage controls access to a free list of memory chunks. 
+Please note that this is a very simple class, with preconditions on almost all its functions. It is intended to 
+be the fastest and smallest possible quick memory allocator - e.g., something to use in embedded systems. 
+This class delegates many difficult preconditions to the user (i.e., alignment issues).
+
+An object of type simple_segregated_storage<SizeType>  is empty  if its free list is empty. 
+If it is not empty, then it is ordered  if its free list is ordered. A free list is ordered if repeated calls 
+to <tt>malloc()</tt> will result in a constantly-increasing sequence of values, as determined by <tt>std::less<void *></tt>. 
+A member function is <i>order-preserving</i> if the free list maintains its order orientation (that is, an 
+ordered free list is still ordered after the member function call).
+
 */
 template <typename SizeType>
 class simple_segregated_storage
@@ -49,9 +62,6 @@ class simple_segregated_storage
     simple_segregated_storage(const simple_segregated_storage &);
     void operator=(const simple_segregated_storage &);
 
-    //! Try to malloc size n of partition_size at start location.
-    //! \pre (n > 0), (start != 0), (nextof(start) != 0)
-    //! \post (start != 0)
     static void * try_malloc_n(void * & start, size_type n,
         size_type partition_size);
 
@@ -61,18 +71,6 @@ class simple_segregated_storage
       or is equal to 0 if the free list is empty.
     */
 
-    //! \fn find_prev Traverses the free list referred to by "first",
-    //!  and returns the iterator previous to where
-    //!  "ptr" would go if it was in the free list.
-    //!  \returns 0 if "ptr" would go at the beginning
-    //!  of the free list (i.e., before "first").
-
-    //! Note that this function finds the location previous to where ptr would go
-    //! if it was in the free list.
-    //! It does not find the entry in the free list before ptr
-    //! (unless ptr is already in the free list).
-    //! Specifically, find_prev(0) will return 0,
-    //! not the last entry in the free list.
     void * find_prev(void * ptr);
 
     // for the sake of code readability :)
@@ -95,15 +93,6 @@ class simple_segregated_storage
       //! \post empty()
     }
 
-    //! Segregate block into chunks.
-    //! \pre npartition_sz >= sizeof(void *)
-    //! \pre    npartition_sz = sizeof(void *) * i, for some integer i
-    //! \pre    nsz >= npartition_sz
-    //! \pre Block is properly aligned for an array of object of
-    //!        size npartition_sz and array of void *.
-    //! The requirements above guarantee that any pointer to a chunk
-    //! (which is a pointer to an element in an array of npartition_sz)
-    //! may be cast to void **.
     static void * segregate(void * block,
         size_type nsz, size_type npartition_sz,
         void * end = 0);
@@ -186,18 +175,15 @@ class simple_segregated_storage
     }
 
    void * malloc_n(size_type n, size_type partition_size);
+    
     //! \pre chunks was previously allocated from *this with the same
     //!   values for n and partition_size.
     //! \post !empty()
     //! \note If you're allocating/deallocating n a lot, you should
     //!  be using an ordered pool.
-
     void free_n(void * const chunks, const size_type n,
         const size_type partition_size)
-    { //! Free N chunks.
-      //! \pre chunks was previously allocated from *this with the same
-      //!   values for n and partition_size.
-
+    { 
       if(n != 0)
         add_block(chunks, n * partition_size, partition_size);
     }
@@ -218,15 +204,22 @@ class simple_segregated_storage
     }
 };
 
+//! Traverses the free list referred to by "first",
+//!  and returns the iterator previous to where
+//!  "ptr" would go if it was in the free list.
+//!  Returns 0 if "ptr" would go at the beginning
+//!  of the free list (i.e., before "first").
+
+//! \note Note that this function finds the location previous to where ptr would go
+//! if it was in the free list.
+//! It does not find the entry in the free list before ptr
+//! (unless ptr is already in the free list).
+//! Specifically, find_prev(0) will return 0,
+//! not the last entry in the free list.
+//! \returns location previous to where ptr would go if it was in the free list.
 template <typename SizeType>
 void * simple_segregated_storage<SizeType>::find_prev(void * const ptr)
-{ /*!
-\returns location previous to where ptr would go if it was in the free list.
-\note This function finds the location previous to where ptr would go if it was in the free list.
-It does not find the entry in the free list before ptr
-(unless ptr is already in the free list).
-Specifically, find_prev(0) will return 0, not the last entry in the free list.
-*/
+{ 
   // Handle border case.
   if (first == 0 || std::greater<void *>()(first, ptr))
     return 0;
@@ -242,6 +235,15 @@ Specifically, find_prev(0) will return 0, not the last entry in the free list.
   }
 }
 
+//! Segregate block into chunks.
+//! \pre npartition_sz >= sizeof(void *)
+//! \pre    npartition_sz = sizeof(void *) * i, for some integer i
+//! \pre    nsz >= npartition_sz
+//! \pre Block is properly aligned for an array of object of
+//!        size npartition_sz and array of void *.
+//! The requirements above guarantee that any pointer to a chunk
+//! (which is a pointer to an element in an array of npartition_sz)
+//! may be cast to void **.
 template <typename SizeType>
 void * simple_segregated_storage<SizeType>::segregate(
     void * const block,
@@ -249,10 +251,10 @@ void * simple_segregated_storage<SizeType>::segregate(
     const size_type partition_sz,
     void * const end)
 {
-  //! Get pointer to last valid chunk, preventing overflow on size calculations
-  //!  The division followed by the multiplication just makes sure that
-  //!    old == block + partition_sz * i, for some integer i, even if the
-  //!    block size (sz) is not a multiple of the partition size.
+  // Get pointer to last valid chunk, preventing overflow on size calculations
+  //  The division followed by the multiplication just makes sure that
+  //    old == block + partition_sz * i, for some integer i, even if the
+  //    block size (sz) is not a multiple of the partition size.
   char * old = static_cast<char *>(block)
       + ((sz - partition_sz) / partition_sz) * partition_sz;
 
@@ -275,7 +277,9 @@ void * simple_segregated_storage<SizeType>::segregate(
   return block;
 }
 
-//! The following function attempts to find n contiguous chunks
+//! \pre (n > 0), (start != 0), (nextof(start) != 0)
+//! \post (start != 0)
+//! The function attempts to find n contiguous chunks
 //!  of size partition_size in the free list, starting at start.
 //! If it succeds, it returns the last chunk in that contiguous
 //!  sequence, so that the sequence is known by [start, {retval}]
@@ -306,6 +310,11 @@ void * simple_segregated_storage<SizeType>::try_malloc_n(
   return iter;
 }
 
+//! Attempts to find a contiguous sequence of n partition_sz-sized chunks. If found, removes them 
+//! all from the free list and returns a pointer to the first. If not found, returns 0. It is strongly 
+//! recommended (but not required) that the free list be ordered, as this algorithm will fail to find 
+//! a contiguous sequence unless it is contiguous in the free list as well. Order-preserving. 
+//! O(N) with respect to the size of the free list.
 template <typename SizeType>
 void * simple_segregated_storage<SizeType>::malloc_n(const size_type n,
     const size_type partition_size)
