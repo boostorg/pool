@@ -54,7 +54,7 @@ template <typename Tag, unsigned RequestedSize,
     typename Mutex = details::pool::default_mutex,
     unsigned NextSize = 32,
     unsigned MaxSize = 0>
-struct singleton_pool;
+class singleton_pool;
 
 //
 // Location: <boost/pool/pool_alloc.hpp>
