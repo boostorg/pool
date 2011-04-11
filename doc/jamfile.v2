@@ -85,94 +85,94 @@ boostbook standalone
       pool
    :
    
-   # General settings
-   # =================
-    # Path for links to Boost. 
-		<xsl:param>boost.root=../../../../..
-		# Path for libraries index:
-		<xsl:param>boost.libraries=../../../../../libs/libraries.htm
-		# Use the main Boost stylesheet:
-		#<xsl:param>html.stylesheet=../../doc/html/boostbook.css
-		<xsl:param>html.stylesheet=./boostbook.css
+      # General settings
+      # =================
+      # Path for links to Boost. 
+      <xsl:param>boost.root=../../../../..
+      # Path for libraries index:
+      <xsl:param>boost.libraries=../../../../../libs/libraries.htm
+      # Use the main Boost stylesheet:
+      #<xsl:param>html.stylesheet=../../doc/html/boostbook.css
+      <xsl:param>html.stylesheet=./boostbook.css
 
-		#<xsl:param>nav.layout=none # No navigation bar (home, prev, next).
-		# defining creates a runtime error: Global parameter nav.layout already defined
-		<xsl:param>nav.layout=horizontal # to get a horizontal navigation bar (you probably DO want this).
+      #<xsl:param>nav.layout=none # No navigation bar (home, prev, next).
+      # defining creates a runtime error: Global parameter nav.layout already defined
+      <xsl:param>nav.layout=horizontal # to get a horizontal navigation bar (you probably DO want this).
 
-		# Path for links to Boost logo.
-		#<xsl:param>boost.root=.. # already defined
-		<xsl:param>boost.image=Boost # options are: none (no logo), Boost (for boost.png), or your own logo, for example, inspired_by_boost.png
-		<xsl:param>boost.image.src=./images/boost.png #
-		<xsl:param>boost.image.w=180 # Width of logo in pixels. (JM has W = 162, h = 46)
-                <xsl:param>boost.image.h=90 # Height of logo in pixels.
+      # Path for links to Boost logo.
+      #<xsl:param>boost.root=.. # already defined
+      <xsl:param>boost.image=Boost # options are: none (no logo), Boost (for boost.png), or your own logo, for example, inspired_by_boost.png
+      <xsl:param>boost.image.src=./images/boost.png #
+      <xsl:param>boost.image.w=180 # Width of logo in pixels. (JM has W = 162, h = 46)
+      <xsl:param>boost.image.h=90 # Height of logo in pixels.
   
-  	# Options for html and pdf
-  	# ========================
-		# No indent on body text:
-		<xsl:param>body.start.indent=0pt
-		# Margin size:
-		<xsl:param>page.margin.inner=0.5in
-		# Margin size:
-		<xsl:param>page.margin.outer=0.5in
-		# Yes, we want graphics for admonishments:
-		<xsl:param>admon.graphics=1
+      # Options for html and pdf
+      # ========================
+      # No indent on body text:
+      <xsl:param>body.start.indent=0pt
+      # Margin size:
+      <xsl:param>page.margin.inner=0.5in
+      # Margin size:
+      <xsl:param>page.margin.outer=0.5in
+      # Yes, we want graphics for admonishments:
+      <xsl:param>admon.graphics=1
   
-		# HTML options:
-		# =============
-		# Use graphics icons not text for navigation:
-		<xsl:param>navig.graphics=1
-		# How far down we chunk nested sections, basically all of them:
-		<xsl:param>chunk.section.depth=2
-		# Don't put the first section on the same page as the TOC itself:
-		<xsl:param>chunk.first.sections=1
-		# How far down sections get TOC's
-		<xsl:param>toc.section.depth=4
-		# Max depth in each TOC:
-		<xsl:param>toc.max.depth=2
-		# How far down we go with TOC's
-		<xsl:param>generate.section.toc.level=10
-		# Horizontal ? spacing in table cells.
-		<format>html:<xsl:param>html.cellspacing=3 # pixels
-		# Vertical spacing in table cells.
-		<format>html:<xsl:param>html.cellpadding=5 # pixels
+      # HTML options:
+      # =============
+      # Use graphics icons not text for navigation:
+      <xsl:param>navig.graphics=1
+      # How far down we chunk nested sections, basically all of them:
+      <xsl:param>chunk.section.depth=2
+      # Don't put the first section on the same page as the TOC itself:
+      <xsl:param>chunk.first.sections=1
+      # How far down sections get TOC's
+      <xsl:param>toc.section.depth=4
+      # Max depth in each TOC:
+      <xsl:param>toc.max.depth=2
+      # How far down we go with TOC's
+      <xsl:param>generate.section.toc.level=10
+      # Horizontal ? spacing in table cells.
+      <format>html:<xsl:param>html.cellspacing=3 # pixels
+      # Vertical spacing in table cells.
+      <format>html:<xsl:param>html.cellpadding=5 # pixels
       <format>html:<xsl:param>boost.max.id.part.length=40
 
-		# PDF Options:
-		# ============
-		# TOC Generation: this is needed for FOP-0.9 and later:
-		<format>pdf:<xsl:param>fop1.extensions=0
-		# Or enable this if you're using XEP:
-		<format>pdf:<xsl:param>xep.extensions=1
-		# TOC generation: this is needed for FOP 0.2, but must not be set to zero for FOP-0.9!
-		<format>pdf:<xsl:param>fop.extensions=0
-		# No indent on body text:
-		<xsl:param>body.start.indent=0pt
-		# Margin size:
-		<xsl:param>page.margin.inner=0.5in
-		# Margin size:
-		<xsl:param>page.margin.outer=0.5in
+      # PDF Options:
+      # ============
+      # TOC Generation: this is needed for FOP-0.9 and later:
+      <format>pdf:<xsl:param>fop1.extensions=0
+      # Or enable this if you're using XEP:
+      <format>pdf:<xsl:param>xep.extensions=1
+      # TOC generation: this is needed for FOP 0.2, but must not be set to zero for FOP-0.9!
+      <format>pdf:<xsl:param>fop.extensions=0
+      # No indent on body text:
+      <xsl:param>body.start.indent=0pt
+      # Margin size:
+      <xsl:param>page.margin.inner=0.5in
+      # Margin size:
+      <xsl:param>page.margin.outer=0.5in
 		
-		# Yes, we want graphics for admonishments:
-		<xsl:param>admon.graphics=1
+      # Yes, we want graphics for admonishments:
+      <xsl:param>admon.graphics=1
 		
-		# Set these one for PDF generation *only*:
-		# default png graphics are awful in PDF form,
-		# better use SVG instead:
-		#<format>pdf:<xsl:param>admon.graphics.extension=".svg"
-		<format>pdf:<xsl:param>admon.graphics.extension=".png" # Only png images are available.
-		<format>pdf:<xsl:param>admon.graphics.path=$(nav_images)/ # next, prev, note, tip ... for pdf.
-		<format>pdf:<xsl:param>use.role.for.mediaobject=1 
-		<format>pdf:<xsl:param>preferred.mediaobject.role=print
-	  <format>pdf:<xsl:param>img.src.path=$(images_location)/ # graphics (diagrams) for pdf.
-		<format>pdf:<xsl:param>draft.mode="no"
-		<format>pdf:<xsl:param>boost.url.prefix=I:/boost-sandbox/guild/pool/libs/pool/doc/html
+      # Set these one for PDF generation *only*:
+      # default png graphics are awful in PDF form,
+      # better use SVG instead:
+      #<format>pdf:<xsl:param>admon.graphics.extension=".svg"
+      <format>pdf:<xsl:param>admon.graphics.extension=".png" # Only png images are available.
+      <format>pdf:<xsl:param>admon.graphics.path=$(nav_images)/ # next, prev, note, tip ... for pdf.
+      <format>pdf:<xsl:param>use.role.for.mediaobject=1 
+      <format>pdf:<xsl:param>preferred.mediaobject.role=print
+      <format>pdf:<xsl:param>img.src.path=$(images_location)/ # graphics (diagrams) for pdf.
+      <format>pdf:<xsl:param>draft.mode="no"
+      <format>pdf:<xsl:param>boost.url.prefix=I:/boost-sandbox/guild/pool/libs/pool/doc/html
 		
-		<dependency>autodoc #
-    <dependency>css-install
-    <dependency>png-install
-    <dependency>svg-install
-    <dependency>pool-png-install
-    <dependency>pool-svg-install
+      <dependency>autodoc #
+      <dependency>css-install
+      <dependency>png-install
+      <dependency>svg-install
+      <dependency>pool-png-install
+      <dependency>pool-svg-install
    ;
 
 path-constant boost-root : [ modules.peek : BOOST ] ;

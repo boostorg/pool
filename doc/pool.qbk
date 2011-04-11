@@ -44,23 +44,22 @@
 [def __pool_simple_segregated_storage [link boost_pool.pool.pooling.simple Simple Segregated Storage]]
 
 [def __todo [link boost_pool.appendices.todo TODO]]
+[def __UserAllocator [link boost_pool.pool.pooling.user_allocator UserAllocator]]
 
 [template mu[]'''&#x3BC;'''] [/ µ Greek small letter mu]
 [template plusminus[]'''&#x00B1;'''] [/ plus or minus sign]
 
-[template graphic[name]  '''<inlinemediaobject>
+[template graphic[name]  
+'''
+<inlinemediaobject>
 <imageobject role="html">
-<imagedata align="center" fileref="./images/'''[name]'''.png"></imagedata>
+<imagedata align="center" fileref="../images/'''[name]'''.png"></imagedata>
 </imageobject>
 <imageobject role="print">
-<imagedata align="center" fileref="./images/'''[name]'''.svg"></imagedata>
+<imagedata align="center" fileref="../images/'''[name]'''.svg"></imagedata>
 </imageobject>
-
-<imageobject role="pdf">
-<imagedata align="center" fileref="/images/'''[name]'''.svg"></imagedata>
-</imageobject>
-
-</inlinemediaobject>''']
+</inlinemediaobject>
+''']
 
 [section:pool Boost Pool Library]
 
@@ -146,6 +145,23 @@ or any system-supplied header at its discretion.
 
 [endsect] [/section:usage How do I use Pool?]
 
+[section:installation Installation]
+
+The Boost Pool library is a header-only library.
+That means there is no .lib, .dll, or .so to build;
+just add the Boost directory to your compiler's include file path,
+and you should be good to go!
+
+[endsect] [/section:installation Installation]
+
+[section:testing Building the Test Programs]
+
+A jamfile.v2 is provided which can be run is the usual way, for example:
+
+``boost\libs\pool\test> bjam -a >pool_test.log``
+
+[endsect] [/section:testing Building the Test Programs]
+
 [section:interfaces Boost Pool Interfaces - What interfaces are provided and when to use each one.]
 
 [h4 Introduction]
@@ -176,25 +192,27 @@ Pool interfaces will always prefer to `return 0` instead of throwing an exceptio
 
 [h5 Ordered versus unordered]
 
-Unordered segregates the memory block specified by block of size `sz` bytes into
-partition_sz-sized chunks, and adds that free list to its own.  Only if the block was
-empty before the call is the block ordered.
+An ordered pool maintains it's free list in order of the address of each free block - 
+this is the most efficient way if you're likely to allocate arrays of objects.
+However, freeing an object can be O(N) in the number of currently free blocks which 
+can be prohibitively expensive in some situations.
 
-Ordered segregates the memory block specified by block of size `sz` bytes into
-partition_sz-sized chunks, and merges that free list into its own,
-so that the order is preserved.
+An unordered pool does not maintain it's free list in any particular order, as a result
+allocation and freeing single objects is very fast, but allocating arrays may be slow 
+(and in particular the pool may not be aware that it contains enough free memory for the
+allocation request, and unnecessarily allocate more memory).
 
 [section:interfaces Pool Interfaces]
 
 [section:pool pool]
 
-The [classref boost::pool::pool pool]
+The [classref boost::pool pool]
 interface is a simple Object Usage interface with Null Return.
 
-[classref boost::pool::pool pool] is a fast memory allocator,
+[classref boost::pool pool] is a fast memory allocator,
 and guarantees proper alignment of all allocated chunks.
 
-[headerref boost/pool/pool.hpp pool.hpp] provides two UserAllocator classes
+[headerref boost/pool/pool.hpp pool.hpp] provides two __UserAllocator classes
 and a [classref boost::pool template class pool],
 which extends and generalizes the framework provided by the
 __pool_simple_segregated_storage solution.
@@ -202,10 +220,10 @@ For information on other pool-based interfaces, see the other __pool_interfaces.
 
 [*Synopsis]
 
-There are two `UserAllocator` classes provided. 
+There are two __UserAllocator classes provided. 
 Both of them are in [headerref boost/pool/pool.hpp pool.hpp].
 
-The default value for the template parameter `UserAllocator` is always
+The default value for the template parameter __UserAllocator is always
 `default_user_allocator_new_delete`.
 
 ``
@@ -230,9 +248,6 @@ The default value for the template parameter `UserAllocator` is always
     static void free(char * const block)
     { std::free(block); }
   };
-
-  struct default_user_allocator_new_delete; // see User Allocators
-  struct default_user_allocator_malloc_free; // see User Allocators
 
   template <typename UserAllocator = default_user_allocator_new_delete>
   class pool
@@ -265,6 +280,7 @@ The default value for the template parameter `UserAllocator` is always
       void ordered_free(void * chunks, size_type n);
   };
 ``
+
 [*Example:]
 `` 
 void func()
@@ -277,6 +293,7 @@ void func()
   }
 } // on function exit, p is destroyed, and all malloc()'ed ints are implicitly freed.
 ``
+
 [endsect] [/section pool]
 
 
@@ -331,7 +348,7 @@ It must have a non-throwing destructor.
 ['UserAllocator]
 
 Defines the method that the underlying Pool will use to allocate memory from the system.
-Default is default_user_allocator_new_delete.  See User Allocators for details.
+Default is default_user_allocator_new_delete.  See ____UserAllocator for details.
 
 [*Example:]
   struct X { ... }; // has destructor with side-effects.
@@ -553,6 +570,7 @@ class fast_pool_allocator
 See User Allocators for details.
 
 [*Example:]
+
   void func()
   {
     std::vector<int, boost::pool_allocator<int> > v;
@@ -568,23 +586,6 @@ See User Allocators for details.
 [endsect] [/section:interfaces The Interfaces - pool, object_pool and singleton_pool]
 
 [endsect] [/section:interfaces- What interfaces are provided and when to use each one.]
-
-[section:installation Installation]
-
-The Boost Pool library is a header-only library.
-That means there is no .lib, .dll, or .so to build;
-just add the Boost directory to your compiler's include file path,
-and you should be good to go!
-
-[endsect] [/section:installation Installation]
-
-[section:testing Building the Test Programs]
-
-A jamfile.v2 is provided which can be run is the usual way, for example:
-
-``boost\libs\pool\test> bjam -a >pool_test.log``
-
-[endsect] [/section:testing Building the Test Programs]
 
 [section:pooling Pool in More Depth]
 
@@ -858,13 +859,6 @@ here's an example memory block where
 `requested_size == 8 and sizeof(void *) == sizeof(size_type) == 4`
 
 [graphic mb2] 
-
-Finally, here is a convoluted example where the requested_size is 7,
-`sizeof(void *) == 3, and sizeof(size_type) == 5`,
-showing how the least common multiple guarantees alignment requirements
-even in the oddest of circumstances:
-
-[graphic mb3] 
 
 [section:chunks How Contiguous Chunks are Handled]
 
