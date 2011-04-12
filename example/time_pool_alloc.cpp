@@ -18,6 +18,8 @@
 #include "sys_allocator.hpp"
 
 unsigned long num_ints;
+unsigned long num_loops = 10;
+unsigned l;
 
 template <unsigned N>
 struct larger_structure
@@ -39,6 +41,7 @@ static void timing_test_alloc_larger()
   std::clock_t start;
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     std::allocator<larger_structure<N> > a;
     for (unsigned long i = 0; i < num_ints; ++i)
@@ -47,6 +50,7 @@ static void timing_test_alloc_larger()
   end[0][0] = (std::clock() - start) / ((double) CLOCKS_PER_SEC);
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     for (unsigned long i = 0; i < num_ints; ++i)
       std::free(std::malloc(sizeof(larger_structure<N>)));
@@ -54,6 +58,7 @@ static void timing_test_alloc_larger()
   end[0][1] = (std::clock() - start) / ((double) CLOCKS_PER_SEC);
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     for (unsigned long i = 0; i < num_ints; ++i)
       delete new (std::nothrow) larger_structure<N>;
@@ -61,6 +66,7 @@ static void timing_test_alloc_larger()
   end[0][2] = (std::clock() - start) / ((double) CLOCKS_PER_SEC);
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     for (unsigned long i = 0; i < num_ints; ++i)
       alloc::deallocate(alloc::allocate());
@@ -68,6 +74,7 @@ static void timing_test_alloc_larger()
   end[0][3] = (std::clock() - start) / ((double) CLOCKS_PER_SEC);
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     for (unsigned long i = 0; i < num_ints; ++i)
       alloc_sync::deallocate(alloc_sync::allocate());
@@ -75,6 +82,7 @@ static void timing_test_alloc_larger()
   end[0][4] = (std::clock() - start) / ((double) CLOCKS_PER_SEC);
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     boost::pool<> p(sizeof(larger_structure<N>));
     for (unsigned long i = 0; i < num_ints; ++i)
@@ -108,6 +116,7 @@ static void timing_test_alloc()
   int ** p = new int*[num_ints];
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     std::allocator<int> a;
     for (unsigned long i = 0; i < num_ints; ++i)
@@ -116,6 +125,7 @@ static void timing_test_alloc()
   end[0][0] = (std::clock() - start) / ((double) CLOCKS_PER_SEC);
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     for (unsigned long i = 0; i < num_ints; ++i)
       std::free(std::malloc(sizeof(int)));
@@ -123,6 +133,7 @@ static void timing_test_alloc()
   end[0][1] = (std::clock() - start) / ((double) CLOCKS_PER_SEC);
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     for (unsigned long i = 0; i < num_ints; ++i)
       delete new (std::nothrow) int;
@@ -130,6 +141,7 @@ static void timing_test_alloc()
   end[0][2] = (std::clock() - start) / ((double) CLOCKS_PER_SEC);
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     for (unsigned long i = 0; i < num_ints; ++i)
       alloc::deallocate(alloc::allocate());
@@ -137,6 +149,7 @@ static void timing_test_alloc()
   end[0][3] = (std::clock() - start) / ((double) CLOCKS_PER_SEC);
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     for (unsigned long i = 0; i < num_ints; ++i)
       alloc_sync::deallocate(alloc_sync::allocate());
@@ -144,6 +157,7 @@ static void timing_test_alloc()
   end[0][4] = (std::clock() - start) / ((double) CLOCKS_PER_SEC);
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     boost::pool<> p(sizeof(int));
     for (unsigned long i = 0; i < num_ints; ++i)
@@ -157,6 +171,7 @@ static void timing_test_alloc()
 
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     std::allocator<int> a;
     for (unsigned long i = 0; i < num_ints; ++i)
@@ -167,6 +182,7 @@ static void timing_test_alloc()
   end[1][0] = (std::clock() - start) / ((double) CLOCKS_PER_SEC);
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     for (unsigned long i = 0; i < num_ints; ++i)
       p[i] = (int *) std::malloc(sizeof(int));
@@ -176,6 +192,7 @@ static void timing_test_alloc()
   end[1][1] = (std::clock() - start) / ((double) CLOCKS_PER_SEC);
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     for (unsigned long i = 0; i < num_ints; ++i)
       p[i] = new (std::nothrow) int;
@@ -185,6 +202,7 @@ static void timing_test_alloc()
   end[1][2] = (std::clock() - start) / ((double) CLOCKS_PER_SEC);
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     for (unsigned long i = 0; i < num_ints; ++i)
       p[i] = alloc::allocate();
@@ -194,6 +212,7 @@ static void timing_test_alloc()
   end[1][3] = (std::clock() - start) / ((double) CLOCKS_PER_SEC);
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     for (unsigned long i = 0; i < num_ints; ++i)
       p[i] = alloc_sync::allocate();
@@ -203,6 +222,7 @@ static void timing_test_alloc()
   end[1][4] = (std::clock() - start) / ((double) CLOCKS_PER_SEC);
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     boost::pool<> pl(sizeof(int));
     for (unsigned long i = 0; i < num_ints; ++i)
@@ -247,6 +267,7 @@ static void timing_test_containers()
   std::clock_t start;
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     std::vector<int, std::allocator<int> > x;
     for (unsigned long i = 0; i < num_ints; ++i)
@@ -255,6 +276,7 @@ static void timing_test_containers()
   end[0][0] = (std::clock() - start) / ((double) CLOCKS_PER_SEC);
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     std::vector<int, malloc_allocator<int> > x;
     for (unsigned long i = 0; i < num_ints; ++i)
@@ -263,6 +285,7 @@ static void timing_test_containers()
   end[0][1] = (std::clock() - start) / ((double) CLOCKS_PER_SEC);
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     std::vector<int, new_delete_allocator<int> > x;
     for (unsigned long i = 0; i < num_ints; ++i)
@@ -271,6 +294,7 @@ static void timing_test_containers()
   end[0][2] = (std::clock() - start) / ((double) CLOCKS_PER_SEC);
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     std::vector<int, alloc> x;
     for (unsigned long i = 0; i < num_ints; ++i)
@@ -279,6 +303,7 @@ static void timing_test_containers()
   end[0][3] = (std::clock() - start) / ((double) CLOCKS_PER_SEC);
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     std::vector<int, alloc_sync> x;
     for (unsigned long i = 0; i < num_ints; ++i)
@@ -288,6 +313,7 @@ static void timing_test_containers()
 
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     std::set<int, std::less<int>, std::allocator<int> > x;
     for (unsigned long i = 0; i < num_ints; ++i)
@@ -296,6 +322,7 @@ static void timing_test_containers()
   end[1][0] = (std::clock() - start) / ((double) CLOCKS_PER_SEC);
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     std::set<int, std::less<int>, malloc_allocator<int> > x;
     for (unsigned long i = 0; i < num_ints; ++i)
@@ -304,6 +331,7 @@ static void timing_test_containers()
   end[1][1] = (std::clock() - start) / ((double) CLOCKS_PER_SEC);
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     std::set<int, std::less<int>, new_delete_allocator<int> > x;
     for (unsigned long i = 0; i < num_ints; ++i)
@@ -312,6 +340,7 @@ static void timing_test_containers()
   end[1][2] = (std::clock() - start) / ((double) CLOCKS_PER_SEC);
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     std::set<int, std::less<int>, fast_alloc> x;
     for (unsigned long i = 0; i < num_ints; ++i)
@@ -320,6 +349,7 @@ static void timing_test_containers()
   end[1][3] = (std::clock() - start) / ((double) CLOCKS_PER_SEC);
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     std::set<int, std::less<int>, fast_alloc_sync> x;
     for (unsigned long i = 0; i < num_ints; ++i)
@@ -329,6 +359,7 @@ static void timing_test_containers()
 
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     std::list<int, std::allocator<int> > x;
     for (unsigned long i = 0; i < num_ints; ++i)
@@ -337,6 +368,7 @@ static void timing_test_containers()
   end[2][0] = (std::clock() - start) / ((double) CLOCKS_PER_SEC);
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     std::list<int, malloc_allocator<int> > x;
     for (unsigned long i = 0; i < num_ints; ++i)
@@ -345,6 +377,7 @@ static void timing_test_containers()
   end[2][1] = (std::clock() - start) / ((double) CLOCKS_PER_SEC);
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     std::list<int, new_delete_allocator<int> > x;
     for (unsigned long i = 0; i < num_ints; ++i)
@@ -353,6 +386,7 @@ static void timing_test_containers()
   end[2][2] = (std::clock() - start) / ((double) CLOCKS_PER_SEC);
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     std::list<int, fast_alloc> x;
     for (unsigned long i = 0; i < num_ints; ++i)
@@ -361,6 +395,7 @@ static void timing_test_containers()
   end[2][3] = (std::clock() - start) / ((double) CLOCKS_PER_SEC);
 
   start = std::clock();
+  for(l = 0; l < num_loops; ++l)
   {
     std::list<int, fast_alloc_sync> x;
     for (unsigned long i = 0; i < num_ints; ++i)
