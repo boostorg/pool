@@ -32,6 +32,7 @@ test-suite pool :
     [ run test_bug_4960.cpp ]
     [ run test_bug_1252.cpp ]
     [ run test_bug_2696.cpp ]
+    [ run  ../example/time_pool_alloc.cpp ]
     [ compile test_poisoned_macros.cpp ]
 
 #

@@ -7,6 +7,11 @@
 #ifndef BOOST_SYS_ALLOCATOR_H
 #define BOOST_SYS_ALLOCATOR_H
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4100)
+#endif
+
 // Symbols: malloc_allocator, new_delete_allocator
 
 #include <cstddef>
@@ -96,5 +101,9 @@ struct new_delete_allocator
   static void destroy(const pointer p)
   { p->~T(); }
 };
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #endif
