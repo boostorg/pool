@@ -486,68 +486,67 @@ Output:
 
 MSVC 10.0  using mutli-threaded DLL
 
-time_pool_alloc.cpp
+ time_pool_alloc.cpp
      Creating library J:\Cpp\pool\pool\Release\alloc_example.lib and object J:\Cpp\pool\pool\Release\alloc_example.exp
   Generating code
   Finished generating code
   alloc_example.vcxproj -> J:\Cpp\pool\pool\Release\alloc_example.exe
   Test 0: Insertion & deletion of 700000 ints in a vector:
-    std::allocator: 0 seconds
-    malloc/free:    0.015 seconds
-    new/delete:     0 seconds
-    Pool Alloc:     0.047 seconds
-    Pool /w Sync:   0.031 seconds
+    std::allocator: 0.062 seconds
+    malloc/free:    0.078 seconds
+    new/delete:     0.078 seconds
+    Pool Alloc:     0.328 seconds
+    Pool /w Sync:   0.343 seconds
     Pool:           not possible
   Test 1: Insertion & deletion of 700000 ints in a set:
-    std::allocator: 0.063 seconds
-    malloc/free:    0.046 seconds
-    new/delete:     0.063 seconds
-    Pool Alloc:     0 seconds
-    Pool /w Sync:   0.015 seconds
+    std::allocator: 0.561 seconds
+    malloc/free:    0.546 seconds
+    new/delete:     0.562 seconds
+    Pool Alloc:     0.109 seconds
+    Pool /w Sync:   0.094 seconds
     Pool:           not possible
   Test 2: Insertion & deletion of 700000 ints in a list:
-    std::allocator: 0.063 seconds
-    malloc/free:    0.078 seconds
-    new/delete:     0.062 seconds
-    Pool Alloc:     0.016 seconds
-    Pool /w Sync:   0 seconds
+    std::allocator: 0.671 seconds
+    malloc/free:    0.67 seconds
+    new/delete:     0.671 seconds
+    Pool Alloc:     0.094 seconds
+    Pool /w Sync:   0.093 seconds
     Pool:           not possible
   Test 3: Alloc & Dealloc 700000 ints:
-    std::allocator: 0.047 seconds
-    malloc/free:    0.062 seconds
-    new/delete:     0.047 seconds
-    Pool Alloc:     0.015 seconds
-    Pool /w Sync:   0 seconds
-    Pool:           0 seconds
-  Test 4: Alloc 700000 ints & Dealloc 700000 ints:
-    std::allocator: 0.063 seconds
-    malloc/free:    0.047 seconds
-    new/delete:     0.078 seconds
-    Pool Alloc:     0 seconds
+    std::allocator: 0.5 seconds
+    malloc/free:    0.468 seconds
+    new/delete:     0.592 seconds
+    Pool Alloc:     0.032 seconds
     Pool /w Sync:   0.015 seconds
-    Pool:           0 seconds
+    Pool:           0.016 seconds
+  Test 4: Alloc 700000 ints & Dealloc 700000 ints:
+    std::allocator: 0.593 seconds
+    malloc/free:    0.577 seconds
+    new/delete:     0.717 seconds
+    Pool Alloc:     0.032 seconds
+    Pool /w Sync:   0.031 seconds
+    Pool:           0.047 seconds
   Test 5: Alloc & Dealloc 700000 structures of size 64:
-    std::allocator: 0.047 seconds
-    malloc/free:    0.047 seconds
-    new/delete:     0.062 seconds
+    std::allocator: 0.499 seconds
+    malloc/free:    0.483 seconds
+    new/delete:     0.624 seconds
     Pool Alloc:     0.016 seconds
-    Pool /w Sync:   0 seconds
-    Pool:           0 seconds
+    Pool /w Sync:   0.031 seconds
+    Pool:           0.016 seconds
   Test 6: Alloc & Dealloc 700000 structures of size 256:
-    std::allocator: 0.047 seconds
-    malloc/free:    0.046 seconds
-    new/delete:     0.063 seconds
-    Pool Alloc:     0.015 seconds
-    Pool /w Sync:   0 seconds
-    Pool:           0 seconds
-  Test 7: Alloc & Dealloc 700000 structures of size 4096:
-    std::allocator: 0.047 seconds
-    malloc/free:    0.047 seconds
-    new/delete:     0.062 seconds
+    std::allocator: 0.499 seconds
+    malloc/free:    0.484 seconds
+    new/delete:     0.639 seconds
     Pool Alloc:     0.016 seconds
-    Pool /w Sync:   0 seconds
-    Pool:           0 seconds
-
+    Pool /w Sync:   0.015 seconds
+    Pool:           0.016 seconds
+  Test 7: Alloc & Dealloc 700000 structures of size 4096:
+    std::allocator: 0.515 seconds
+    malloc/free:    0.515 seconds
+    new/delete:     0.639 seconds
+    Pool Alloc:     0.031 seconds
+    Pool /w Sync:   0.016 seconds
+    Pool:           0.016 seconds
 
 */
 
