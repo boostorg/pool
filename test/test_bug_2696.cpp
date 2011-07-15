@@ -17,7 +17,11 @@ struct limited_allocator_new_delete
 
    static char * malloc BOOST_PREVENT_MACRO_SUBSTITUTION(const size_type bytes)
    { 
+#ifndef BOOST_POOL_VALGRIND
       static const unsigned max_size = 4 * 40 + sizeof(void*) + 2 * sizeof(std::size_t);
+#else
+      static const unsigned max_size = 4 * 40;
+#endif
       if(bytes > max_size)
          return 0;
       return new (std::nothrow) char[bytes];

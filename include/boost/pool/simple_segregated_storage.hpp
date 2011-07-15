@@ -31,6 +31,12 @@
 #pragma warning(disable:4127)  // Conditional expression is constant
 #endif
 
+#ifdef BOOST_POOL_VALIDATE
+#  define BOOST_POOL_VALIDATE_INTERNALS validate();
+#else
+#  define BOOST_POOL_VALIDATE_INTERNALS
+#endif
+
 namespace boost {
 
 /*! 
@@ -106,8 +112,9 @@ class simple_segregated_storage
       //!  free list referred to by "first".
       //! \pre Same as segregate.
       //!  \post !empty()
-
+      BOOST_POOL_VALIDATE_INTERNALS
       first = segregate(block, nsz, npartition_sz, first);
+      BOOST_POOL_VALIDATE_INTERNALS
     }
 
     // Same preconditions as 'segregate'
@@ -118,7 +125,7 @@ class simple_segregated_storage
       //! This (slower) version of add_block segregates the
       //!  block and merges its free list into our free list
       //!  in the proper order.
-
+       BOOST_POOL_VALIDATE_INTERNALS
       // Find where "block" would go in the free list
       void * const loc = find_prev(block);
 
@@ -127,6 +134,7 @@ class simple_segregated_storage
         add_block(block, nsz, npartition_sz);
       else
         nextof(loc) = segregate(block, nsz, npartition_sz, nextof(loc));
+      BOOST_POOL_VALIDATE_INTERNALS
     }
 
     // default destructor.
@@ -140,10 +148,12 @@ class simple_segregated_storage
     { //! Create a chunk.
       //!  \pre !empty()
       //! Increment the "first" pointer to point to the next chunk.
+       BOOST_POOL_VALIDATE_INTERNALS
       void * const ret = first;
 
       // Increment the "first" pointer to point to the next chunk.
       first = nextof(first);
+      BOOST_POOL_VALIDATE_INTERNALS
       return ret;
     }
 
@@ -151,8 +161,10 @@ class simple_segregated_storage
     { //! Free a chunk.
       //! \pre chunk was previously returned from a malloc() referring to the same free list.
       //! \post !empty()
+       BOOST_POOL_VALIDATE_INTERNALS
       nextof(chunk) = first;
       first = chunk;
+      BOOST_POOL_VALIDATE_INTERNALS
     }
 
     void ordered_free(void * const chunk)
@@ -162,6 +174,7 @@ class simple_segregated_storage
       //! \post !empty().
 
       // Find where "chunk" goes in the free list
+       BOOST_POOL_VALIDATE_INTERNALS
       void * const loc = find_prev(chunk);
 
       // Place either at beginning or in middle/end.
@@ -172,6 +185,7 @@ class simple_segregated_storage
         nextof(chunk) = nextof(loc);
         nextof(loc) = chunk;
       }
+      BOOST_POOL_VALIDATE_INTERNALS
     }
 
    void * malloc_n(size_type n, size_type partition_size);
@@ -184,8 +198,10 @@ class simple_segregated_storage
     void free_n(void * const chunks, const size_type n,
         const size_type partition_size)
     { 
+       BOOST_POOL_VALIDATE_INTERNALS
       if(n != 0)
         add_block(chunks, n * partition_size, partition_size);
+       BOOST_POOL_VALIDATE_INTERNALS
     }
 
     // pre: chunks was previously allocated from *this with the same
@@ -198,10 +214,26 @@ class simple_segregated_storage
       //!   values for n and partition_size.
 
       //! \pre n should not be zero (n == 0 has no effect).
-
+       BOOST_POOL_VALIDATE_INTERNALS
       if(n != 0)
         add_ordered_block(chunks, n * partition_size, partition_size);
+       BOOST_POOL_VALIDATE_INTERNALS
     }
+#ifdef BOOST_POOL_VALIDATE
+    void validate()
+    {
+       int index = 0;
+       void* old = 0;
+       void* ptr = first;
+       while(ptr)
+       {
+          void* pt = nextof(ptr); // trigger possible segfault *before* we update variables
+          ++index;
+          old = ptr;
+          ptr = nextof(ptr);
+       }
+    }
+#endif
 };
 
 //! Traverses the free list referred to by "first",
@@ -319,6 +351,7 @@ template <typename SizeType>
 void * simple_segregated_storage<SizeType>::malloc_n(const size_type n,
     const size_type partition_size)
 {
+   BOOST_POOL_VALIDATE_INTERNALS
   if(n == 0)
     return 0;
   void * start = &first;
@@ -331,6 +364,7 @@ void * simple_segregated_storage<SizeType>::malloc_n(const size_type n,
   } while (iter == 0);
   void * const ret = nextof(start);
   nextof(start) = nextof(iter);
+  BOOST_POOL_VALIDATE_INTERNALS
   return ret;
 }
 

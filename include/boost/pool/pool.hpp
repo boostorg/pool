@@ -39,6 +39,10 @@
 #include <iostream>
 #include<iomanip>
 #endif
+#ifdef BOOST_POOL_VALGRIND
+#include <set>
+#include <valgrind/memcheck.h>
+#endif
 
 #ifdef BOOST_NO_STDC_NAMESPACE
  namespace std { using ::malloc; using ::free; }
@@ -233,6 +237,7 @@ The member function valid can be used to test for validity.
 }; // class PODptr
 } // namespace details
 
+#ifndef BOOST_POOL_VALGRIND
 /*!
   \brief A fast memory allocator that guarantees proper alignment of all allocated chunks.
 
@@ -420,7 +425,6 @@ class pool: protected simple_segregated_storage < typename UserAllocator::size_t
       //! Otherwise, creates a new memory block, adds its free list to pool's free list,
       //! \returns a free chunk from that block.
       //! If a new memory block cannot be allocated, returns 0. Amortized O(1).
-
       // Look for a non-empty storage
       if (!store().empty())
         return (store().malloc)();
@@ -431,7 +435,6 @@ class pool: protected simple_segregated_storage < typename UserAllocator::size_t
     { //! Same as malloc, only merges the free lists, to preserve order. Amortized O(1).
       //! \returns a free chunk from that block.
       //! If a new memory block cannot be allocated, returns 0. Amortized O(1).
-
       // Look for a non-empty storage
       if (!store().empty())
         return (store().malloc)();
@@ -879,6 +882,130 @@ pool<UserAllocator>::find_POD(void * const chunk) const
 
   return iter;
 }
+
+#else // BOOST_POOL_VALGRIND
+
+template<typename UserAllocator> 
+class pool 
+{
+public:
+  // types
+  typedef UserAllocator                  user_allocator;   // User allocator. 
+  typedef typename UserAllocator::size_type       size_type;        // An unsigned integral type that can represent the size of the largest object to be allocated. 
+  typedef typename UserAllocator::difference_type difference_type;  // A signed integral type that can represent the difference of any two pointers. 
+
+  // construct/copy/destruct
+  explicit pool(const size_type s, const size_type = 32, const size_type m = 0) : chunk_size(s), max_alloc_size(m) {}
+  ~pool()
+  {
+     purge_memory();
+  }
+
+  bool release_memory()
+  {
+     bool ret = free_list.empty() ? false : true;
+     for(std::set<void*>::iterator pos = free_list.begin(); pos != free_list.end(); ++pos)
+     {
+        (user_allocator::free)(static_cast<char*>(*pos));
+     }
+     free_list.clear();
+     return ret;
+  }
+  bool purge_memory()
+  {
+     bool ret = free_list.empty() && used_list.empty() ? false : true;
+     for(std::set<void*>::iterator pos = free_list.begin(); pos != free_list.end(); ++pos)
+     {
+        (user_allocator::free)(static_cast<char*>(*pos));
+     }
+     free_list.clear();
+     for(std::set<void*>::iterator pos = used_list.begin(); pos != used_list.end(); ++pos)
+     {
+        (user_allocator::free)(static_cast<char*>(*pos));
+     }
+     used_list.clear();
+     return ret;
+  }
+  size_type get_next_size() const
+  {
+     return 1;
+  }
+  void set_next_size(const size_type){}
+  size_type get_max_size() const
+  {
+     return max_alloc_size;
+  }
+  void set_max_size(const size_type s)
+  {
+     max_alloc_size = s;
+  }
+  size_type get_requested_size() const
+  {
+     return chunk_size;
+  }
+  void * malloc BOOST_PREVENT_MACRO_SUBSTITUTION()
+  {
+     void* ret;
+     if(free_list.empty())
+     {
+        ret = (user_allocator::malloc)(chunk_size);
+        VALGRIND_MAKE_MEM_UNDEFINED(ret, chunk_size);
+     }
+     else
+     {
+        ret = *free_list.begin();
+        free_list.erase(free_list.begin());
+        VALGRIND_MAKE_MEM_UNDEFINED(ret, chunk_size);
+     }
+     used_list.insert(ret);
+     return ret;
+  }
+  void * ordered_malloc()
+  {
+     return (this->malloc)();
+  }
+  void * ordered_malloc(size_type n)
+  {
+     if(max_alloc_size && (n > max_alloc_size))
+        return 0;
+     void* ret = (user_allocator::malloc)(chunk_size * n);
+     used_list.insert(ret);
+     return ret;
+  }
+  void free BOOST_PREVENT_MACRO_SUBSTITUTION(void *const chunk)
+  {
+     BOOST_ASSERT(used_list.count(chunk) == 1);
+     BOOST_ASSERT(free_list.count(chunk) == 0);
+     used_list.erase(chunk);
+     free_list.insert(chunk);
+     VALGRIND_MAKE_MEM_NOACCESS(chunk, chunk_size);
+  }
+  void ordered_free(void *const chunk)
+  {
+     return (this->free)(chunk);
+  }
+  void free BOOST_PREVENT_MACRO_SUBSTITUTION(void *const chunk, const size_type)
+  {
+     BOOST_ASSERT(used_list.count(chunk) == 1);
+     BOOST_ASSERT(free_list.count(chunk) == 0);
+     used_list.erase(chunk);
+     (user_allocator::free)(static_cast<char*>(chunk));
+  }
+  void ordered_free(void *const chunk, const size_type n)
+  {
+     (this->free)(chunk, n);
+  }
+  bool is_from(void *const chunk) const
+  {
+     return used_list.count(chunk) || free_list.count(chunk);
+  }
+
+protected:
+   unsigned chunk_size, max_alloc_size;
+   std::set<void*> free_list, used_list;
+};
+
+#endif
 
 } // namespace boost
 

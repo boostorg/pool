@@ -449,6 +449,10 @@ int main(int argc, char * argv[])
   else
     num_ints = 700000;
 
+#ifndef _NDEBUG
+  num_ints /= 100;
+#endif
+
   try
   {
     timing_test_containers();

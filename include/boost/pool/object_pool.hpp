@@ -219,6 +219,7 @@ class object_pool: protected pool<UserAllocator>
 template <typename T, typename UserAllocator>
 object_pool<T, UserAllocator>::~object_pool()
 {
+#ifndef BOOST_POOL_VALGRIND
   // handle trivial case of invalid list.
   if (!this->list.valid())
     return;
@@ -266,6 +267,14 @@ object_pool<T, UserAllocator>::~object_pool()
   // Make the block list empty so that the inherited destructor doesn't try to
   // free it again.
   this->list.invalidate();
+#else
+   // destruct all used elements:
+   for(std::set<void*>::iterator pos = this->used_list.begin(); pos != this->used_list.end(); ++pos)
+   {
+      static_cast<T*>(*pos)->~T();
+   }
+   // base class will actually free the memory...
+#endif
 }
 
 } // namespace boost

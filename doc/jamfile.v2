@@ -7,46 +7,11 @@
 #
 #  See http://www.boost.org for updates, documentation, and revision history.
 
+path-constant boost-root : [ modules.peek : BOOST ] ;
 path-constant nav_images :  html/images/ ; # png and svg images for home, next, note, tip...
 path-constant images_location : html ; # location of SVG and PNG images referenced by Quickbook.
 
-echo "images_location" $(images_location) ; # \guild\pool\libs\pool\doc\html
-echo "nav_images" $(nav_images) ; # \guild\pool\libs\pool\doc\html\images
-
 import modules ;
-
-if --enable-index in  [ modules.peek : ARGV ]
-{
-   ECHO "Building the Pool docs with automatic index generation enabled." ;
-   using auto-index ;
-   project : requirements
-         # <auto-index>on turns on index (or off).
-        <auto-index>on
-                
-        # Choose indexing method (separately for html and pdf):
-        <format>html:<auto-index-internal>on  # on (or off) to use internally generated indexes.
-        # <format>html:<xsl:param>generate.index=0 # Don't let the XSL stylesheets generate indexes.
-        
-        <format>pdf:<auto-index-internal>off # on (or off) to use internally generated indexes.
-        # <auto-index-type>index  # Use <index>...</index> as the XML wrapper.
-        
-        <format>pdf:<xsl:param>index.on.type=1 # For the native stylesheets to generate the different indexes.
-        # PDF native index support is probably better for PDFs as then you actually get page numbers.
-
-        <auto-index-script>index.idx # Specifies the name of the script to load. 
-        # <auto-index-prefix>../../../ # Path to /pool so index.idx !scan-path can use boost/ and libs/doc.
-        <auto-index-prefix>../../.. 
-        
-        <quickbook-define>enable_index
-        
-        # <auto-index-verbose>on
-        
-        ;
-}
-else
-{
-   ECHO "Building the Pool docs with automatic index generation disabled. To get an auto-index, try building with --enable-index." ;
-}
 
 using doxygen ;  # Required if you want to use Doxygen.
 using quickbook ;
@@ -78,7 +43,7 @@ doxygen autodoc
 			<xsl:param>"boost.doxygen.reftitle=Boost.Pool C++ Reference"
    ;
 
-xml pool : pool.qbk ;
+xml pool : pool.qbk : <include>$(boost-root)/tools/auto_index/include ;
 
 boostbook standalone
    :
@@ -167,6 +132,23 @@ boostbook standalone
       <format>pdf:<xsl:param>draft.mode="no"
       <format>pdf:<xsl:param>boost.url.prefix=I:/boost-sandbox/guild/pool/libs/pool/doc/html
 		
+      # <auto-index>on turns on index (or off).
+      <auto-index>on
+                
+      # Choose indexing method (separately for html and pdf):
+      <format>html:<auto-index-internal>on  # on (or off) to use internally generated indexes.
+      # <format>html:<xsl:param>generate.index=0 # Don't let the XSL stylesheets generate indexes.
+        
+      <format>pdf:<auto-index-internal>off # on (or off) to use internally generated indexes.
+      # <auto-index-type>index  # Use <index>...</index> as the XML wrapper.
+        
+      <format>pdf:<xsl:param>index.on.type=1 # For the native stylesheets to generate the different indexes.
+      # PDF native index support is probably better for PDFs as then you actually get page numbers.
+
+      <auto-index-script>index.idx # Specifies the name of the script to load. 
+      # <auto-index-prefix>../../../ # Path to /pool so index.idx !scan-path can use boost/ and libs/doc.
+      <auto-index-prefix>../../.. 
+
       <dependency>autodoc #
       <dependency>css-install
       <dependency>png-install
@@ -175,7 +157,6 @@ boostbook standalone
       <dependency>pool-svg-install
    ;
 
-path-constant boost-root : [ modules.peek : BOOST ] ;
 install css-install : $(boost-root)/doc/src/boostbook.css : <location>html ;
 
 install png-install : [ glob $(boost-root)/doc/src/images/*.png $(boost-root)/boost.png ] : <location>html/images ;

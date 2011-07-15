@@ -61,7 +61,7 @@
 </inlinemediaobject>
 ''']
 
-[section:pool Boost Pool Library]
+[section:pool Introduction and Overview]
 
 [section:conventions Documentation Naming and Formatting Conventions]
 
@@ -1033,7 +1033,7 @@ both in pool.hpp. The default value for the template parameter UserAllocator is 
 [endsect][/section:user_allocator The UserAllocator Concept]
 [endsect] [/section:pooling Pool in more depth]
 
-[xinclude autodoc.xml] [/ Boost.Pool Reference section, using Doxygen reference documentation.]
+[endsect] 
 
 [/Note that there will be always some warnings about the .ipp files in Doxygen warnings and Autodoxywarnings.log files. 
 "Warning: include file boost/pool/detail/pool_construct.ipp not found, perhaps you forgot to add its directory to INCLUDE_PATH?"
@@ -1057,17 +1057,19 @@ Attempts to avoid this with "using boost::details::PODptr;" have so far failed.
 
 ]
 
-[endsect] [/section:pool Boost Pool Library]
+[xinclude autodoc.xml] [/ Boost.Pool Reference section, using Doxygen reference documentation.]
+
+
+[/section:pool Introduction/Overview]
 
 [section:appendices Appendices]
 
 [section:history Appendix A: History]
 
-[section [*Version 1.0.0, January 1, 2000] ['First release]]
+[h4 Version 2.0.0, January 11, 2011]
 
-[endsect] [/section [*Version 1.0.0, January 1, 2000] ['First release]]
+['Documentation and testing revision]
 
-[section [*Version 2.0.0, January 11, 2011] ['Documentation and testing revision]]
 [*Features:]
 
 * Fix issues 
@@ -1086,25 +1088,13 @@ Choose ['add `\boost-sandbox\boost_docs\trunk\doc\style\html\conversion\html_to_
 to My Style Sheet.  Html pages are now displayed as Quickbook and can be copied and pasted
 into quickbook files using your favored text editor for Quickbook.
 
-[endsect] [/section [*Version 2.0.0, January 11, 2011] ['Documentation and testing revision]]
+[h4 Version 1.0.0, January 1, 2000]
+
+['First release]
 
 [endsect] [/section:history Appendix A: History]
 
-[section:rationale Appendix B: Rationale]
-
-TODO.
-
-[endsect] [/section:rationale Appendix B: Rationale]
-
-
-[section:implementation Appendix C: Implementation Notes]
-
-TODO.
-
-[endsect] [/section:implementation Appendix C: Implementation Notes]
-
-
-[section:faq Appendix D: FAQ]
+[section:faq Appendix B: FAQ]
 
 [h5 Why should I use Pool?]
 
@@ -1122,28 +1112,33 @@ Another common usage is the situation above, where many objects may be dropped o
 
 In general, use Pools when you need a more efficient way to do unusual memory control.
 
-[endsect] [/section:faq Appendix D: FAQ]
+[endsect] [/section:faq Appendix B: FAQ]
 
-[section:acknowledgements Appendix E: Acknowledgements]
+[section:acknowledgements Appendix C: Acknowledgements]
 
 Many, many thanks to the Boost peers, notably Jeff Garland, Beman Dawes, Ed Brey,
 Gary Powell, Peter Dimov, and Jens Maurer for providing helpful suggestions!
 
-[endsect] [/section:acknowledgements Appendix E: Acknowledgements]
+[endsect] [/section:acknowledgements Appendix C: Acknowledgements]
 
-[section:tests  Appendix F: Tests]
+[section:tests  Appendix D: Tests]
 
 See folder `boost/libs/pool/test/`.
 
-[endsect] [/section:tests  Appendix F: Tests]
+[endsect] [/section:tests  Appendix D: Tests]
 
-[section:tickets  Appendix G: Tickets]
+[section:tickets  Appendix E: Tickets]
 
 Report and view bugs and features by adding a ticket at [@https://svn.boost.org/trac/boost Boost.Trac].
 
-[endsect] [/section:tickets  Appendix G: Tickets]
+Existing open tickets for this library alone can be viewed 
+[@https://svn.boost.org/trac/boost/query?status=assigned&status=new&status=reopened&component=pool&col=id&col=summary&col=status&col=owner&col=type&col=milestone&order=priority here].
+Existing tickets for this library - including closed ones - can be viewed 
+[@https://svn.boost.org/trac/boost/query?status=assigned&status=closed&status=new&status=reopened&component=pool&col=id&col=summary&col=status&col=owner&col=type&col=milestone&order=priority here].
 
-[section:implementations  Appendix H: Other Implementations]
+[endsect] [/section:tickets  Appendix E: Tickets]
+
+[section:implementations  Appendix F: Other Implementations]
 
 Pool allocators are found in many programming languages, and in many variations.
 The beginnings of many implementations may be found in common programming literature;
@@ -1173,9 +1168,9 @@ of a Simple Segregated Storage described in this document.
   * Not thread-safe.
   * The static pooling example is not portable.
 
-[endsect] [/section:implementations  Appendix H: Other Implementations]
+[endsect] [/section:implementations  Appendix F: Other Implementations]
 
-[section:references  Appendix I: References]
+[section:references  Appendix G: References]
 
 # [#ref1] Doug Lea, A Memory Allocator. See [@http://gee.cs.oswego.edu/dl/html/malloc.html http://gee.cs.oswego.edu/dl/html/malloc.html]
 # [#ref2]Paul R. Wilson, Mark S. Johnstone, Michael Neely, and David Boles,
@@ -1183,49 +1178,26 @@ of a Simple Segregated Storage described in this document.
 in International Workshop on Memory Management, September 1995, pg. 28, 36.
 See [@ftp://ftp.cs.utexas.edu/pub/garbage/allocsrv.ps ftp://ftp.cs.utexas.edu/pub/garbage/allocsrv.ps]
 
-[endsect] [/section:references  Appendix I: references]
+[endsect] [/section:references  Appendix G: references]
 
-[section:todo  Appendix J: Future plans]
+[section:todo  Appendix H: Future plans]
 
 Another pool interface will be written: a base class for per-class pool allocation.
 
 This "pool_base" interface will be Singleton Usage with Exceptions,
 and built on the singleton_pool interface.
 
-Many functions need better Doxygen comments about their function.  (rebind in particular is undocumented).
-
-These comments appear in the reference section.
-
-[endsect] [/section:todo  Appendix J: Future plans]
+[endsect] [/section:todo  Appendix G: Future plans]
 
 [endsect] [/section:appendices Appendices]
 
 [section:indexes Indexes]
 
-[? enable_index
-'''
-  <index/>
+[include auto_index_helpers.qbk]
 
-  <index type="function_name">
-  <title>Function Index</title>
-  </index>
-  
-  <index type="class_name">
-  <title>Class Index</title>
-  </index>
-  
-  <index type="typedef_name">
-  <title>Typedef Index</title>
-  </index>
-'''
-]
-
-[/ BOOST_PREVENT_MACRO_SUBSTITUTION is the only macro and not sure if useful to show here?
-  but after removing still get BOOST_PREVENT_MACRO_SUBSTITUTION in the function index.
-  <index type="macro_name">
-  <title>Macro Index</title>
-  </index>
-  <index/>
-]
+[named_index function_name Function Index]
+[named_index class_name Class Index]
+[named_index typedef_name Typedef Index]
+[index]
 
 [endsect] [/section:indexes Indexes]

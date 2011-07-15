@@ -125,7 +125,17 @@ unsigned debug_info<b>::allocated = 0;
   <b>NextSize</b> The value of this parameter is passed to the underlying singleton_pool when it is created.
 
   <b>MaxSize</b> Limit on the maximum size used.
-*/
+
+  \attention
+  The underlying singleton_pool used by the this allocator
+  constructs a pool instance that
+  <b>is never freed</b>.  This means that memory allocated
+  by the allocator can be still used after main() has
+  completed, but may mean that some memory checking programs
+  will complain about leaks.
+ 
+  
+  */
 template <typename T,
     typename UserAllocator,
     typename Mutex,
@@ -304,6 +314,15 @@ struct fast_pool_allocator_tag
   <b>NextSize</b> The value of this parameter is passed to the underlying Pool when it is created.
 
   <b>MaxSize</b> Limit on the maximum size used.
+
+   \attention
+  The underlying singleton_pool used by the this allocator
+  constructs a pool instance that
+  <b>is never freed</b>.  This means that memory allocated
+  by the allocator can be still used after main() has
+  completed, but may mean that some memory checking programs
+  will complain about leaks.
+ 
  */
 
 template <typename T,
