@@ -26,10 +26,10 @@ struct bad
    int* buf;
 };
 
-std::auto_ptr<bad> ptr;
+std::auto_ptr<bad> aptr;
 
 int main() 
 {
-   ptr.reset(new bad());
+   aptr.reset(new bad());
    return 0;
 }

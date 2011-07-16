@@ -117,7 +117,7 @@ private:
 #ifndef BOOST_DOXYGEN
     struct pool_type: public Mutex, public pool<UserAllocator>
     {
-      pool_type() : pool<UserAllocator>(RequestedSize, NextSize) {}
+      pool_type() : pool<UserAllocator>(RequestedSize, NextSize, MaxSize) {}
     }; //  struct pool_type: Mutex
 
 #else

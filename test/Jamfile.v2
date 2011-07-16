@@ -10,6 +10,7 @@ project
         <define>BOOST_ALL_NO_LIB=1
         <warnings>all
         <toolset>gcc:<cxxflags>-Wextra
+        <toolset>gcc:<cxxflags>-Wshadow
         <toolset>gcc:<warnings-as-errors>on
         <toolset>gcc:<cxxflags>-Wno-long-long
         <toolset>gcc:<cxxflags>-Wcast-align

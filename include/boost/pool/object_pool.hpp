@@ -96,9 +96,9 @@ class object_pool: protected pool<UserAllocator>
     }
 
   public:
-    explicit object_pool(const size_type next_size = 32, const size_type max_size = 0)
+    explicit object_pool(const size_type arg_next_size = 32, const size_type arg_max_size = 0)
     :
-    pool<UserAllocator>(sizeof(T), next_size, max_size)
+    pool<UserAllocator>(sizeof(T), arg_next_size, arg_max_size)
     { //! Constructs a new (empty by default) ObjectPool.
       //! \param next_size Number of chunks to request from the system the next time that object needs to allocate system memory (default 32).
       //! \pre next_size != 0.

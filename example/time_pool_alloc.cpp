@@ -159,12 +159,12 @@ static void timing_test_alloc()
   start = std::clock();
   for(l = 0; l < num_loops; ++l)
   {
-    boost::pool<> p(sizeof(int));
+    boost::pool<> p2(sizeof(int));
     for (unsigned long i = 0; i < num_ints; ++i)
     {
-      void * const t = p.malloc();
+      void * const t = p2.malloc();
       if (t != 0)
-        p.free(t);
+        p2.free(t);
     }
   }
   end[0][5] = (std::clock() - start) / ((double) CLOCKS_PER_SEC);

@@ -134,6 +134,7 @@ boostbook standalone
 		
       # <auto-index>on turns on index (or off).
       <auto-index>on
+      <auto-index-verbose>on
                 
       # Choose indexing method (separately for html and pdf):
       <format>html:<auto-index-internal>on  # on (or off) to use internally generated indexes.
