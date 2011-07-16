@@ -1075,6 +1075,8 @@ Attempts to avoid this with "using boost::details::PODptr;" have so far failed.
 * Fix issues 
 [@https://svn.boost.org/trac/boost/ticket/1252 1252],
 [@https://svn.boost.org/trac/boost/ticket/4960 4960],
+[@https://svn.boost.org/trac/boost/ticket/5526 5526],
+[@https://svn.boost.org/trac/boost/ticket/5700 5700],
 [@https://svn.boost.org/trac/boost/ticket/2696 2696].
 
 * Documentation converted and rewritten and revised 
