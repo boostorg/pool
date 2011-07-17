@@ -211,7 +211,7 @@ The member function valid can be used to test for validity.
     }
     size_type element_size() const
     { //! \returns size of element pointer area.
-      return (sz - sizeof(size_type) -
+      return static_cast<size_type>(sz - sizeof(size_type) -
           math::static_lcm<sizeof(size_type), sizeof(void *)>::value);
     }
 
@@ -284,9 +284,9 @@ class pool: protected simple_segregated_storage < typename UserAllocator::size_t
     typedef typename UserAllocator::difference_type difference_type;  //!< A signed integral type that can represent the difference of any two pointers.
 
   private:
-    BOOST_STATIC_CONSTANT(unsigned, min_alloc_size =
+    BOOST_STATIC_CONSTANT(size_type, min_alloc_size =
         (::boost::math::static_lcm<sizeof(void *), sizeof(size_type)>::value) );
-    BOOST_STATIC_CONSTANT(unsigned, min_align =
+    BOOST_STATIC_CONSTANT(size_type, min_align =
         (::boost::math::static_lcm< ::boost::alignment_of<void *>::value, ::boost::alignment_of<size_type>::value>::value) );
 
     //! \returns 0 if out-of-memory.
@@ -346,8 +346,8 @@ class pool: protected simple_segregated_storage < typename UserAllocator::size_t
       // For alignment reasons, this used to be defined to be lcm(requested_size, sizeof(void *), sizeof(size_type)),
       // but is now more parsimonious: just rounding up to the minimum required alignment of our housekeeping data
       // when required.  This works provided all alignments are powers of two.
-      unsigned s = (std::max)(requested_size, static_cast<unsigned>(min_alloc_size));
-      unsigned rem = s % min_align;
+      size_type s = (std::max)(requested_size, min_alloc_size);
+      size_type rem = s % min_align;
       if(rem)
          s += min_align - rem;
       BOOST_ASSERT(s >= min_alloc_size);
@@ -517,6 +517,13 @@ class pool: protected simple_segregated_storage < typename UserAllocator::size_t
     }
 };
 
+#ifndef BOOST_NO_INCLASS_MEMBER_INITIALIZATION
+template <typename UserAllocator>
+typename pool<UserAllocator>::size_type const pool<UserAllocator>::min_alloc_size;
+template <typename UserAllocator>
+typename pool<UserAllocator>::size_type const pool<UserAllocator>::min_align;
+#endif
+
 template <typename UserAllocator>
 bool pool<UserAllocator>::release_memory()
 { //! pool must be ordered. Frees every memory block that doesn't have any allocated chunks.
@@ -681,8 +688,8 @@ void * pool<UserAllocator>::malloc_need_resize()
   //!  Allocates chunk in newly malloc aftert resize.
   //! \returns pointer to chunk.
   size_type partition_size = alloc_size();
-  size_type POD_size = next_size * partition_size +
-      math::static_lcm<sizeof(size_type), sizeof(void *)>::value + sizeof(size_type);
+  size_type POD_size = static_cast<size_type>(next_size * partition_size +
+      math::static_lcm<sizeof(size_type), sizeof(void *)>::value + sizeof(size_type));
   char * ptr = (UserAllocator::malloc)(POD_size);
   if (ptr == 0)
   {
@@ -690,8 +697,8 @@ void * pool<UserAllocator>::malloc_need_resize()
      {
         next_size >>= 1;
         partition_size = alloc_size();
-        POD_size = next_size * partition_size +
-            math::static_lcm<sizeof(size_type), sizeof(void *)>::value + sizeof(size_type);
+        POD_size = static_cast<size_type>(next_size * partition_size +
+            math::static_lcm<sizeof(size_type), sizeof(void *)>::value + sizeof(size_type));
         ptr = (UserAllocator::malloc)(POD_size);
      }
      if(ptr == 0)
@@ -721,8 +728,8 @@ void * pool<UserAllocator>::ordered_malloc_need_resize()
 { //! No memory in any of our storages; make a new storage,
   //! \returns pointer to new chunk.
   size_type partition_size = alloc_size();
-  size_type POD_size = next_size * partition_size +
-      math::static_lcm<sizeof(size_type), sizeof(void *)>::value + sizeof(size_type);
+  size_type POD_size = static_cast<size_type>(next_size * partition_size +
+      math::static_lcm<sizeof(size_type), sizeof(void *)>::value + sizeof(size_type));
   char * ptr = (UserAllocator::malloc)(POD_size);
   if (ptr == 0)
   {
@@ -730,8 +737,8 @@ void * pool<UserAllocator>::ordered_malloc_need_resize()
      {
        next_size >>= 1;
        partition_size = alloc_size();
-       POD_size = next_size * partition_size +
-                    math::static_lcm<sizeof(size_type), sizeof(void *)>::value + sizeof(size_type);
+       POD_size = static_cast<size_type>(next_size * partition_size +
+                    math::static_lcm<sizeof(size_type), sizeof(void *)>::value + sizeof(size_type));
        ptr = (UserAllocator::malloc)(POD_size);
      }
      if(ptr == 0)
@@ -806,8 +813,8 @@ void * pool<UserAllocator>::ordered_malloc(const size_type n)
   // Not enough memory in our storages; make a new storage,
   BOOST_USING_STD_MAX();
   next_size = max BOOST_PREVENT_MACRO_SUBSTITUTION(next_size, num_chunks);
-  size_type POD_size = next_size * partition_size +
-      math::static_lcm<sizeof(size_type), sizeof(void *)>::value + sizeof(size_type);
+  size_type POD_size = static_cast<size_type>(next_size * partition_size +
+      math::static_lcm<sizeof(size_type), sizeof(void *)>::value + sizeof(size_type));
   char * ptr = (UserAllocator::malloc)(POD_size);
   if (ptr == 0)
   {
@@ -817,8 +824,8 @@ void * pool<UserAllocator>::ordered_malloc(const size_type n)
         // allocated last time:
         next_size >>= 1;
         next_size = max BOOST_PREVENT_MACRO_SUBSTITUTION(next_size, num_chunks);
-        POD_size = next_size * partition_size +
-            math::static_lcm<sizeof(size_type), sizeof(void *)>::value + sizeof(size_type);
+        POD_size = static_cast<size_type>(next_size * partition_size +
+            math::static_lcm<sizeof(size_type), sizeof(void *)>::value + sizeof(size_type));
         ptr = (UserAllocator::malloc)(POD_size);
      }
      if(ptr == 0)
@@ -1001,7 +1008,7 @@ public:
   }
 
 protected:
-   unsigned chunk_size, max_alloc_size;
+   size_type chunk_size, max_alloc_size;
    std::set<void*> free_list, used_list;
 };
 

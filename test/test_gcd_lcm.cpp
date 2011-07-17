@@ -10,9 +10,16 @@
 #include <boost/cstdint.hpp>
 #include <boost/limits.hpp>
 #include <boost/math/common_factor.hpp>
+#if defined(BOOST_MSVC) && (BOOST_MSVC == 1400)
+#pragma warning(push)
+#pragma warning(disable:4244)
+#endif
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/variate_generator.hpp>
+#if defined(BOOST_MSVC) && (BOOST_MSVC == 1310)
+#pragma warning(pop)
+#endif
 
 #include <boost/detail/lightweight_test.hpp>
 
