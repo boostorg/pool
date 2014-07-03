@@ -17,6 +17,7 @@ project
         <toolset>pathscale:<cxxflags>-Wno-long-long
         <toolset>gcc:<cxxflags>-Wcast-align
         <toolset>msvc:<warnings-as-errors>on
+        <toolset>msvc:<define>_SCL_SECURE_NO_WARNINGS
     ;
 
 import testing ;
