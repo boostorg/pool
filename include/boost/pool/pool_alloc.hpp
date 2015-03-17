@@ -215,7 +215,7 @@ class pool_allocator
     static size_type max_size()
     { return (std::numeric_limits<size_type>::max)(); }
 
-#ifdef BOOST_HAS_VARIADIC_TMPL
+#if defined(BOOST_HAS_VARIADIC_TMPL) && defined(BOOST_HAS_RVALUE_REFS)
     template <typename U, typename... Args>
     static void construct(U* ptr, Args&&... args)
     { new (ptr) U(std::forward<Args>(args)...); }
@@ -412,7 +412,7 @@ class fast_pool_allocator
     static size_type max_size()
     { return (std::numeric_limits<size_type>::max)(); }
 
-#ifdef BOOST_HAS_VARIADIC_TMPL
+#if defined(BOOST_HAS_VARIADIC_TMPL) && defined(BOOST_HAS_RVALUE_REFS)
     template <typename U, typename... Args>
     void construct(U* ptr, Args&&... args)
     { new (ptr) U(std::forward<Args>(args)...); }
