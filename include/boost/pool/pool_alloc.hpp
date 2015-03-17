@@ -411,8 +411,16 @@ class fast_pool_allocator
     { return &s; }
     static size_type max_size()
     { return (std::numeric_limits<size_type>::max)(); }
+
+#ifdef BOOST_HAS_VARIADIC_TMPL
+    template <typename U, typename... Args>
+    void construct(U* ptr, Args&&... args)
+    { new (ptr) U(std::forward<Args>(args)...); }
+#else
     void construct(const pointer ptr, const value_type & t)
     { new (ptr) T(t); }
+#endif
+
     void destroy(const pointer ptr)
     { //! Destroy ptr using destructor.
       ptr->~T();
