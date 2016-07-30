@@ -5,7 +5,7 @@
 * file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt)
 */
 
-// Test of bug #2656 (https://svn.boost.org/trac/boost/ticket/2526)
+// Test of bug #5526 (https://svn.boost.org/trac/boost/ticket/5526)
 
 #include <boost/smart_ptr/scoped_ptr.hpp>
 #include <boost/pool/pool.hpp>
