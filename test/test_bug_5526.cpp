@@ -7,7 +7,7 @@
 
 // Test of bug #2656 (https://svn.boost.org/trac/boost/ticket/2526)
 
-#include <memory> 
+#include <boost/smart_ptr/scoped_ptr.hpp>
 #include <boost/pool/pool.hpp>
 #include <boost/pool/singleton_pool.hpp>
 #include <boost/assert.hpp>
@@ -27,7 +27,7 @@ struct bad
    int* buf;
 };
 
-std::auto_ptr<bad> aptr;
+boost::scoped_ptr<bad> aptr;
 
 int main() 
 {
