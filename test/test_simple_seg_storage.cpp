@@ -7,6 +7,7 @@
 
 #include "test_simple_seg_storage.hpp"
 #include "track_allocator.hpp"
+#include "random_shuffle.hpp"
 
 #include <boost/pool/simple_segregated_storage.hpp>
 #include <boost/assert.hpp>
@@ -226,7 +227,7 @@ int main()
         std::vector<void*> vpv;
         for(std::size_t i=0; i < 6; ++i) { vpv.push_back(tstore.malloc()); }
         BOOST_ASSERT(tstore.empty());
-        std::random_shuffle(vpv.begin(), vpv.end());
+        pool_test_random_shuffle(vpv.begin(), vpv.end());
 
         for(std::size_t i=0; i < 6; ++i)
         {
