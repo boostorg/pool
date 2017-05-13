@@ -5,6 +5,7 @@
 * file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt)
 */
 
+#include <iostream>
 #include <boost/pool/pool_alloc.hpp>
 #include <boost/thread.hpp>
 #if defined(BOOST_MSVC) && (BOOST_MSVC == 1400)
