@@ -12,14 +12,17 @@
 #include <boost/pool/simple_segregated_storage.hpp>
 #include <boost/assert.hpp>
 #include <boost/integer/common_factor_ct.hpp>
-#if defined(BOOST_MSVC) && (BOOST_MSVC == 1400)
+#if defined(BOOST_MSVC) && (BOOST_MSVC <= 1600)
 #pragma warning(push)
-#pragma warning(disable:4244)
+#pragma warning(disable: 4244)
+// ..\..\boost/random/uniform_int_distribution.hpp(171) :
+//   warning C4127: conditional expression is constant
+#pragma warning(disable: 4127)
 #endif
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/variate_generator.hpp>
-#if defined(BOOST_MSVC) && (BOOST_MSVC == 1400)
+#if defined(BOOST_MSVC) && (BOOST_MSVC <= 1600)
 #pragma warning(pop)
 #endif
 
