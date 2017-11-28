@@ -18,12 +18,21 @@ project
         <toolset>msvc:<define>_SCL_SECURE_NO_WARNINGS
     ;
 
+import common ;
 import testing ;
 
-run valgrind_config_check.cpp : : : <testing.launcher>"valgrind --error-exitcode=1" ;
+obj valgrind_config_check : valgrind_config_check.cpp ;
 explicit valgrind_config_check ;
 
-local use-valgrind = [ check-target-builds valgrind_config_check "valgrind" : <testing.launcher>"valgrind --error-exitcode=1" : <build>no ] ;
+local VALGRIND = [ common.find-tool valgrind ] ;
+
+local use-valgrind = <build>no ;
+if $(VALGRIND)
+{
+    use-valgrind = [ check-target-builds valgrind_config_check "valgrind"
+                   : <testing.launcher>"$(VALGRIND) --error-exitcode=1"
+                   : <build>no ] ;
+}
 
 local Werr = <toolset>gcc:<warnings-as-errors>on <toolset>msvc:<warnings-as-errors>on ;
 
