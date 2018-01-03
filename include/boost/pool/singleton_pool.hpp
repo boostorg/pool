@@ -191,6 +191,12 @@ public:
       details::pool::guard<Mutex> g(p);
       return p.purge_memory();
     }
+    static size_type get_next_size()
+    { //! Equivalent to SingletonPool::p.get_next_size(); synchronized.
+      pool_type & p = get_pool();
+      details::pool::guard<Mutex> g(p);
+      return p.get_next_size();
+    }
 
 private:
    typedef boost::aligned_storage<sizeof(pool_type), boost::alignment_of<pool_type>::value> storage_type;
