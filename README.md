@@ -7,7 +7,7 @@ Distributed under the [Boost Software License, Version 1.0](http://www.boost.org
 ### Properties
 
 * C++03
-* Requires linking against Boost.Thread, Boost.System if BOOST_POOL_NO_MT is defined, otherwise header-only (see [trac-7085](https://svn.boost.org/trac10/ticket/7085))
+* Requires linking against Boost.Thread, Boost.System if BOOST_POOL_NO_MT is not defined, otherwise header-only (see [trac-7085](https://svn.boost.org/trac10/ticket/7085))
 
 ### Build Status
 
