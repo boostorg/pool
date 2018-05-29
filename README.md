@@ -20,7 +20,6 @@ Branch          | Travis | Appveyor | Coverity Scan | codecov.io | Deps | Docs |
 
 | Name        | Purpose                        |
 | ----------- | ------------------------------ |
-| `ci`        | continuous integration scripts |
 | `doc`       | documentation                  |
 | `example`   | examples                       |
 | `include`   | headers                        |
