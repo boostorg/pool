@@ -26,7 +26,7 @@
 #pragma warning(pop)
 #endif
 
-#include <boost/detail/lightweight_test.hpp>
+#include <boost/core/lightweight_test.hpp>
 
 #include <algorithm>
 #include <functional>
@@ -300,4 +300,5 @@ int main()
         delete [] *itr;
     }
     track_allocator::allocated_blocks.clear();
+    return boost::report_errors();
 }
