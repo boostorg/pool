@@ -175,6 +175,18 @@ class object_pool: protected pool<UserAllocator>
        //! detail/pool_construct.bat and detail/pool_construct.sh are also provided to call m4, defining NumberOfArguments 
        //! to be their command-line parameter. See these files for more details.
     }
+#elif defined(BOOST_HAS_VARIADIC_TMPL) && defined(BOOST_HAS_RVALUE_REFS)
+    // When available, use variadic templates to avoid the older '.ipp'/'.m4' implementation
+    template <typename... Args>
+    element_type * construct(Args&&... args)
+    {
+        element_type* const ret = (malloc)();
+        if (ret == 0)
+            return ret;
+        try { new (ret) element_type(std::forward<Args>(args)...); }
+        catch (...) { (free)(ret); throw; }
+        return ret;
+    }
 #else
 // Include automatically-generated file for family of template construct() functions.
 // Copy .inc renamed .ipp to conform to Doxygen include filename expectations, PAB 12 Jan 11.
