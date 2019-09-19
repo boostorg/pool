@@ -153,6 +153,23 @@ std::set<char *> TrackAlloc<UserAllocator>::allocated_blocks;
 
 typedef TrackAlloc<boost::default_user_allocator_new_delete> track_alloc;
 
+// This is a simple UserAllocator to allow coverage-testing of the codepath
+//   where memory allocation fails.
+struct always_fails_allocation_alloc
+{
+    typedef std::size_t size_type;
+    typedef std::ptrdiff_t difference_type;
+
+    static char * malloc(const size_type /*bytes*/)
+    {
+        return 0;
+    }
+
+    static void free(char * const /*block*/)
+    {
+    }
+};
+
 void test()
 {
     {
@@ -229,6 +246,16 @@ void test()
         }
     }
 #endif
+
+    {
+        // Test the case where memory allocation intentionally fails
+        boost::object_pool<tester, always_fails_allocation_alloc> pool;
+        BOOST_TEST( pool.construct() == 0 );
+        BOOST_TEST( pool.construct(1,2) == 0 );
+#if defined(BOOST_HAS_VARIADIC_TMPL) && defined(BOOST_HAS_RVALUE_REFS)
+        BOOST_TEST( pool.construct(1,2,3,4) == 0 );
+#endif
+    }
 }
 
 void test_alloc()
