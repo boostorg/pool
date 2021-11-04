@@ -222,7 +222,7 @@ jobs:
             b2_defines: "define=BOOST_NO_STRESS_TEST=1"
             b2_variant: "variant=debug"
             b2_testflags: "testing.launcher=valgrind"
-            valgrind_opts: "--error-exitcode=1"
+            valgrind_opts: "--error-exitcode=1 --suppressions=libs/pool/test/suppressions.txt"
           - name: "COMMENT=Coverity Scan B2_TOOLSET=clang Job 17"
             buildtype: "b5847f804b-cce9827eb5"
             packages: "binutils-gold gdb libc6-dbg"
