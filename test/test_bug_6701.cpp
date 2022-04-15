@@ -12,16 +12,20 @@
 
 int main()
 {
-  boost::pool<> p(1024, std::numeric_limits<size_t>::max() / 768);
+  #if !(BOOST_USE_VALGRIND)
+    if (sizeof(size_t) > 4) {
+      boost::pool<> p(1024, std::numeric_limits<size_t>::max() / 768);
 
-  void *x = p.malloc();
-  BOOST_ASSERT(!x);
+      void *x = p.malloc();
+      BOOST_ASSERT(!x);
 
-  BOOST_ASSERT(std::numeric_limits<size_t>::max() / 1024 >= p.get_next_size());
-  BOOST_ASSERT(std::numeric_limits<size_t>::max() / 1024 >= p.get_max_size());
+      BOOST_ASSERT(std::numeric_limits<size_t>::max() / 1024 >= p.get_next_size());
+      BOOST_ASSERT(std::numeric_limits<size_t>::max() / 1024 >= p.get_max_size());
 
-  void *y = p.ordered_malloc(std::numeric_limits<size_t>::max() / 768);
-  BOOST_ASSERT(!y);
+      void *y = p.ordered_malloc(std::numeric_limits<size_t>::max() / 768);
+      BOOST_ASSERT(!y);
+    }
+  #endif
 
   return 0;
 }
