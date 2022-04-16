@@ -127,7 +127,7 @@ jobs:
                 echo "B2_DEFINES=BOOST_NO_STRESS_TEST=1" >> $GITHUB_ENV
                 echo "B2_TESTFLAGS=testing.launcher=valgrind" >> $GITHUB_ENV
                 echo "B2_FLAGS=define=BOOST_USE_VALGRIND=1" >> $GITHUB_ENV
-                echo "VALGRIND_OPTS=--error-exitcode=1" >> $GITHUB_ENV
+                echo "VALGRIND_OPTS=--error-exitcode=1 --suppressions=libs/pool/test/suppressions.txt" >> $GITHUB_ENV
             fi
             git config --global pack.threads 0
 
