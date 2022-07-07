@@ -48,6 +48,10 @@ public:
 
     void check_out(void * const This)
     {
+        // Under current usage, 'This' is the 'this'-pointer of a 'tester' object.
+        //   If it is NULL here, then something has already gone terribly wrong
+        BOOST_TEST(This != NULL);
+
         BOOST_TEST(objs.find(This) != objs.end());
         objs.erase(This);
     }
@@ -73,8 +77,13 @@ struct tester
         mem.check_in(this);
     }
 
-    tester(int a0, const int& a1, int a2, const int a3)
+    tester(int a0, const int& a1, int a2, const int a3, bool throw_except = false)
     {
+        if(throw_except)
+        {
+            throw std::logic_error("Deliberate constructor exception");
+        }
+
         set_values(a0, a1, a2, a3);
 
         mem.check_in(this);
@@ -219,6 +228,17 @@ void test()
             }
             catch(const std::logic_error &) {}
         }
+#if defined(BOOST_HAS_VARIADIC_TMPL) && defined(BOOST_HAS_RVALUE_REFS)
+        for(int k=0; k < 5; ++k)
+        {
+            try
+            {
+                // The following constructions will raise an exception.
+                pool.construct(k,2*k,3*k,4*k,true);
+            }
+            catch(const std::logic_error &) {}
+        }
+#endif
     }
 
     {
