@@ -38,6 +38,7 @@ test-suite pool :
     [ run test_bug_6701.cpp ]
     [ run test_threading.cpp : : : <threading>multi <library>/boost/thread//boost_thread ]
     [ compile test_poisoned_macros.cpp ]
+    [ compile test_issue_49.cpp ]
     ;
 
 if [ os.environ VALGRIND_OPTS ]
