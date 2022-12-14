@@ -274,6 +274,7 @@ void test_mem_usage()
         BOOST_TEST(pool.release_memory());
         pool.free(ptr_0);
         pool.free(ptr_1);
+        BOOST_TEST(pool.release_memory());
     }
 
     BOOST_TEST(track_alloc::ok());
