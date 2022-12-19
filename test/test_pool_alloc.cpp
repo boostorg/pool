@@ -277,6 +277,20 @@ void test_mem_usage()
         BOOST_TEST(pool.release_memory());
     }
 
+    {
+        pool_type pool(sizeof(int), 2);
+        void * ptr_0 = pool.malloc();
+        void * ptr_1 = pool.malloc();
+        void * ptr_2 = pool.malloc();
+        void * ptr_3 = pool.malloc();
+        pool.ordered_free(ptr_0);
+        pool.ordered_free(ptr_1);
+        BOOST_TEST(pool.release_memory());
+        pool.ordered_free(ptr_2);
+        pool.ordered_free(ptr_3);
+        BOOST_TEST(pool.release_memory());
+    }
+
     BOOST_TEST(track_alloc::ok());
 }
 
