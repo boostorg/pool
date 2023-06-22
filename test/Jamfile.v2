@@ -37,6 +37,7 @@ test-suite pool :
     [ run test_bug_2696.cpp ]
     [ run test_bug_5526.cpp : : : <library>/boost/smart_ptr//boost_smart_ptr [ requires cxx11_noexcept ] ]
     [ run test_bug_6701.cpp ]
+    [ run test_bug_54.cpp ]
     [ run test_threading.cpp : : : <threading>multi <library>/boost/thread//boost_thread <library>/boost/random//boost_random ]
     [ compile test_poisoned_macros.cpp ]
     ;
