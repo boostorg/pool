@@ -969,6 +969,8 @@ public:
      if(free_list.empty())
      {
         ret = (user_allocator::malloc)(chunk_size);
+        if ( ret == 0 )
+           return ret;
         VALGRIND_MAKE_MEM_UNDEFINED(ret, chunk_size);
      }
      else
