@@ -48,6 +48,10 @@ public:
 
     void check_out(void * const This)
     {
+        // Under current usage, 'This' is the 'this'-pointer of a 'tester' object.
+        //   If it is NULL here, then something has already gone terribly wrong
+        BOOST_TEST(This != NULL);
+
         BOOST_TEST(objs.find(This) != objs.end());
         objs.erase(This);
     }
@@ -66,6 +70,25 @@ struct tester
         mem.check_in(this);
     }
 
+    tester(int a0, int a1)
+    {
+        set_values(a0, a1, -1, -1);
+
+        mem.check_in(this);
+    }
+
+    tester(int a0, const int& a1, int a2, const int a3, bool throw_except = false)
+    {
+        if(throw_except)
+        {
+            throw std::logic_error("Deliberate constructor exception");
+        }
+
+        set_values(a0, a1, a2, a3);
+
+        mem.check_in(this);
+    }
+
     tester(const tester &)
     {
         mem.check_in(this);
@@ -74,6 +97,32 @@ struct tester
     ~tester()
     {
         mem.check_out(this);
+    }
+
+    int stored_a0;
+    int stored_a1;
+    int stored_a2;
+    int stored_a3;
+
+    void set_values(int a0, int a1, int a2, int a3)
+    {
+        stored_a0 = a0;
+        stored_a1 = a1;
+        stored_a2 = a2;
+        stored_a3 = a3;
+    }
+
+    void check_values(int a0, int a1)
+    {
+        check_values(a0, a1, -1, -1);
+    }
+
+    void check_values(int a0, int a1, int a2, int a3)
+    {
+        BOOST_TEST( a0 == stored_a0 );
+        BOOST_TEST( a1 == stored_a1 );
+        BOOST_TEST( a2 == stored_a2 );
+        BOOST_TEST( a3 == stored_a3 );
     }
 };
 
@@ -112,6 +161,23 @@ template <typename UserAllocator>
 std::set<char *> TrackAlloc<UserAllocator>::allocated_blocks;
 
 typedef TrackAlloc<boost::default_user_allocator_new_delete> track_alloc;
+
+// This is a simple UserAllocator to allow coverage-testing of the codepath
+//   where memory allocation fails.
+struct always_fails_allocation_alloc
+{
+    typedef std::size_t size_type;
+    typedef std::ptrdiff_t difference_type;
+
+    static char * malloc(const size_type /*bytes*/)
+    {
+        return 0;
+    }
+
+    static void free(char * const /*block*/)
+    {
+    }
+};
 
 void test()
 {
@@ -162,6 +228,53 @@ void test()
             }
             catch(const std::logic_error &) {}
         }
+#if defined(BOOST_HAS_VARIADIC_TMPL) && defined(BOOST_HAS_RVALUE_REFS)
+        for(int k=0; k < 5; ++k)
+        {
+            try
+            {
+                // The following constructions will raise an exception.
+                pool.construct(k,2*k,3*k,4*k,true);
+            }
+            catch(const std::logic_error &) {}
+        }
+#endif
+    }
+
+    {
+        // Test the 'pool.construct' with 2 ctor parameters
+        boost::object_pool<tester> pool;
+        for(int i=0; i < 5; ++i)
+        {
+            tester * newItem = pool.construct(i, 2*i);
+            newItem->check_values(i, 2*i);
+        }
+    }
+
+#if defined(BOOST_HAS_VARIADIC_TMPL) && defined(BOOST_HAS_RVALUE_REFS)
+    {
+        // Test the 'pool.construct' with 4 ctor parameters
+        //   Without variadic-templates, this functionality requires
+        //   that the end-user has run the 'detail/pool_construct.m4'
+        //   functionality to generate a larger set of 'construct()'
+        //   overloads. [see docs for object_pool::construct()]
+        boost::object_pool<tester> pool;
+        for(int i=0; i < 5; ++i)
+        {
+            tester * newItem = pool.construct(i, 2*i, 3*i, 5*i);
+            newItem->check_values(i, 2*i, 3*i, 5*i);
+        }
+    }
+#endif
+
+    {
+        // Test the case where memory allocation intentionally fails
+        boost::object_pool<tester, always_fails_allocation_alloc> pool;
+        BOOST_TEST( pool.construct() == 0 );
+        BOOST_TEST( pool.construct(1,2) == 0 );
+#if defined(BOOST_HAS_VARIADIC_TMPL) && defined(BOOST_HAS_RVALUE_REFS)
+        BOOST_TEST( pool.construct(1,2,3,4) == 0 );
+#endif
     }
 }
 
