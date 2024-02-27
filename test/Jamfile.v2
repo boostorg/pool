@@ -36,6 +36,7 @@ test-suite pool :
     [ run test_bug_2696.cpp ]
     [ run test_bug_5526.cpp ]
     [ run test_bug_6701.cpp ]
+    [ run test_bug_54.cpp ]
     [ run test_threading.cpp : : : <threading>multi <library>/boost/thread//boost_thread ]
     [ compile test_poisoned_macros.cpp ]
     ;

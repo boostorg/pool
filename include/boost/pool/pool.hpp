@@ -295,6 +295,18 @@ class pool: protected simple_segregated_storage < typename UserAllocator::size_t
     //! Called if malloc/ordered_malloc needs to resize the free list.
     void * malloc_need_resize(); //! Called if malloc needs to resize the free list.
     void * ordered_malloc_need_resize();  //! Called if ordered_malloc needs to resize the free list.
+    void advance_next(size_type partition_size)
+    {
+      BOOST_USING_STD_MIN();
+      size_type nnext_size;
+      if(!max_size)
+        nnext_size = next_size << 1;
+      else if(next_size*partition_size/requested_size < max_size)
+        nnext_size = min BOOST_PREVENT_MACRO_SUBSTITUTION(next_size << 1, max_size * requested_size / partition_size);
+      else
+        return;
+      next_size = min BOOST_PREVENT_MACRO_SUBSTITUTION(nnext_size, max_chunks());
+    }
 
   protected:
     details::PODptr<size_type> list; //!< List structure holding ordered blocks.
@@ -717,11 +729,7 @@ void * pool<UserAllocator>::malloc_need_resize()
   }
   const details::PODptr<size_type> node(ptr, POD_size);
 
-  BOOST_USING_STD_MIN();
-  if(!max_size)
-    set_next_size(next_size << 1);
-  else if( next_size*partition_size/requested_size < max_size)
-    set_next_size(min BOOST_PREVENT_MACRO_SUBSTITUTION(next_size << 1, max_size * requested_size / partition_size));
+  advance_next(partition_size);
 
   //  initialize it,
   store().add_block(node.begin(), node.element_size(), partition_size);
@@ -757,11 +765,7 @@ void * pool<UserAllocator>::ordered_malloc_need_resize()
   }
   const details::PODptr<size_type> node(ptr, POD_size);
 
-  BOOST_USING_STD_MIN();
-  if(!max_size)
-    set_next_size(next_size << 1);
-  else if( next_size*partition_size/requested_size < max_size)
-    set_next_size(min BOOST_PREVENT_MACRO_SUBSTITUTION(next_size << 1, max_size * requested_size / partition_size));
+  advance_next(partition_size);
 
   //  initialize it,
   //  (we can use "add_block" here because we know that
@@ -851,11 +855,7 @@ void * pool<UserAllocator>::ordered_malloc(const size_type n)
     store().add_ordered_block(node.begin() + num_chunks * partition_size,
         node.element_size() - num_chunks * partition_size, partition_size);
 
-  BOOST_USING_STD_MIN();
-  if(!max_size)
-    set_next_size(next_size << 1);
-  else if( next_size*partition_size/requested_size < max_size)
-    set_next_size(min BOOST_PREVENT_MACRO_SUBSTITUTION(next_size << 1, max_size * requested_size / partition_size));
+  advance_next(partition_size);
 
   //  insert it into the list,
   //   handle border case.
