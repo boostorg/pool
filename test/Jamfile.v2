@@ -22,7 +22,7 @@ import os ;
 import testing ;
 
 test-suite pool :
-    [ run test_simple_seg_storage.cpp : : : <source>/boost/random//boost_random <toolset>msvc:<cxxflags>-wd4267 ]
+    [ run test_simple_seg_storage.cpp : : : <library>/boost/random//boost_random <toolset>msvc:<cxxflags>-wd4267 ]
     [ run test_pool_alloc.cpp ]
     [ run pool_msvc_compiler_bug_test.cpp : : : <library>/boost/serialization//boost_serialization <toolset>msvc:<cxxflags>-wd4512 ]
     [ run test_msvc_mem_leak_detect.cpp ]
@@ -33,7 +33,7 @@ test-suite pool :
         <toolset>gcc:<cxxflags>-Wno-long-long
         <toolset>pathscale:<cxxflags>-Wno-long-long ]
     [ run test_bug_2696.cpp ]
-    [ run test_bug_5526.cpp : : : <source>/boost/smart_ptr//boost_smart_ptr ]
+    [ run test_bug_5526.cpp : : : <library>/boost/smart_ptr//boost_smart_ptr ]
     [ run test_bug_6701.cpp ]
     [ run test_threading.cpp : : : <threading>multi <library>/boost/thread//boost_thread <library>/boost/random//boost_random ]
     [ compile test_poisoned_macros.cpp ]
