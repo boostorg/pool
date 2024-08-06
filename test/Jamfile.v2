@@ -6,6 +6,7 @@
 
 project
     :   requirements
+        <library>/boost/pool//boost_pool
         <library>/boost/system//boost_system
         <define>BOOST_ALL_NO_LIB=1
         <warnings>all
