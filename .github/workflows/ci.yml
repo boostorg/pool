@@ -1,7 +1,7 @@
 # Copyright 2020-2021 Peter Dimov
 # Copyright 2021 Andrey Semashev
 # Copyright 2021 Alexander Grund
-# Copyright 2022 James E. King III
+# Copyright 2022-2025 James E. King III
 #
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at http://boost.org/LICENSE_1_0.txt)
@@ -18,12 +18,17 @@ on:
       - feature/**
       - fix/**
       - pr/**
+    paths-ignore:
+      - LICENSE
+      - meta/**
+      - README.md
 
 concurrency:
   group: ${{format('{0}:{1}', github.repository, github.ref)}}
   cancel-in-progress: true
 
 env:
+  # test_bug_6701 (nice to scope this down)
   ASAN_OPTIONS: allocator_may_return_null=1
   GIT_FETCH_JOBS: 8
   NET_RETRY_COUNT: 5
@@ -31,7 +36,6 @@ env:
   B2_VARIANT: debug,release
   B2_LINK: shared,static
   LCOV_BRANCH_COVERAGE: 1
-  CODECOV_NAME: Github Actions
 
 jobs:
   posix:
@@ -132,7 +136,7 @@ jobs:
                 for i in {1..${NET_RETRY_COUNT:-3}}; do sudo -E add-apt-repository -y ppa:git-core/ppa && break || sleep 10; done
                 apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
                 osver=$(lsb_release -sr | cut -f1 -d.)
-                pkgs="g++ git"
+                pkgs="g++ git xz-utils"
                 # Ubuntu 22+ has only Python 3 in the repos
                 if [ -n "$osver" ] && [ "$osver" -ge "22" ]; then
                   pkgs+=" python-is-python3 libpython3-dev"
@@ -144,6 +148,9 @@ jobs:
             # For jobs not compatible with ccache, use "ccache: no" in the matrix
             if [[ "${{ matrix.ccache }}" == "no" ]]; then
                 echo "B2_USE_CCACHE=0" >> $GITHUB_ENV
+            fi
+            if [[ "${{ matrix.sanitize }}" == "yes" ]]; then
+                echo "LSAN_OPTIONS=suppressions=${GITHUB_WORKSPACE}/test/suppressions.txt" >> $GITHUB_ENV
             fi
             git config --global pack.threads 0
             if [[ "${{matrix.container}}" == "ubuntu:1"* ]]; then
@@ -180,8 +187,8 @@ jobs:
       - name: Install packages
         if: startsWith(matrix.os, 'ubuntu')
         run: |
-            SOURCE_KEYS=(${{join(matrix.source_keys, ' ')}})
-            SOURCES=(${{join(matrix.sources, ' ')}})
+            SOURCE_KEYS=("${{join(matrix.source_keys, '" "')}}")
+            SOURCES=("${{join(matrix.sources, '" "')}}")
             # Add this by default
             SOURCE_KEYS+=('http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x1E9377A2BA9EF27F')
             SOURCES+=(ppa:ubuntu-toolchain-r/test)
@@ -247,21 +254,11 @@ jobs:
         if: '!matrix.coverity'
         run: ci/build.sh
 
-      - name: Collect coverage
+      - name: Upload coverage
         if: matrix.coverage
         run: ci/codecov.sh "upload"
         env:
-          BOOST_CI_CODECOV_IO_UPLOAD: skip
-
-      - name: Upload coverage
-        if: matrix.coverage
-        uses: codecov/codecov-action@v4
-        with:
-          disable_search: true
-          file: coverage.info
-          name: Github Actions
-          token: ${{secrets.CODECOV_TOKEN}}
-          verbose: true
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Run coverity
         if: matrix.coverity && github.event_name == 'push' && (github.ref_name == 'develop' || github.ref_name == 'master')
@@ -325,11 +322,12 @@ jobs:
 
       - name: Upload coverage
         if: matrix.coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           disable_search: true
-          file: __out/cobertura.xml
-          name: Github Actions
+          fail_ci_if_error: true
+          files: __out/cobertura.xml
+          name: github-actions
           token: ${{secrets.CODECOV_TOKEN}}
           verbose: true
 

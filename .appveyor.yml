@@ -33,6 +33,12 @@ branches:
     - /fix\/.*/
     - /pr\/.*/
 
+skip_commits:
+  files:
+    - LICENSE
+    - meta/*
+    - README.md
+
 matrix:
   fast_finish: false
   # Adding MAYFAIL to any matrix job allows it to fail but the build stays green:
