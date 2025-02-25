@@ -138,7 +138,7 @@ jobs:
                 osver=$(lsb_release -sr | cut -f1 -d.)
                 pkgs="g++ git xz-utils"
                 # Ubuntu 22+ has only Python 3 in the repos
-                if [ -n "$osver" ] && [ "$osver" -ge "22" ]; then
+                if [ -n "$osver" ] && [ "$osver" -ge "20" ]; then
                   pkgs+=" python-is-python3 libpython3-dev"
                 else
                   pkgs+=" python libpython-dev"
