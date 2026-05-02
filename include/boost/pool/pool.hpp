@@ -310,6 +310,7 @@ class pool: protected simple_segregated_storage < typename UserAllocator::size_t
     const size_type requested_size;
     size_type next_size;
     size_type start_size;
+    size_type init_next_size;
     size_type max_size;
 
     //! finds which POD in the list 'chunk' was allocated from.
@@ -375,7 +376,7 @@ class pool: protected simple_segregated_storage < typename UserAllocator::size_t
         const size_type nnext_size = 32,
         const size_type nmax_size = 0)
     :
-        list(0, 0), requested_size(nrequested_size), next_size(nnext_size), start_size(nnext_size),max_size(nmax_size)
+        list(0, 0), requested_size(nrequested_size), init_next_size(nnext_size), next_size(nnext_size), start_size(nnext_size),max_size(nmax_size)
     { //!   Constructs a new empty Pool that can be used to allocate chunks of size RequestedSize.
       //! \param nrequested_size  Requested chunk size
       //! \param  nnext_size parameter is of type size_type,
@@ -688,7 +689,7 @@ bool pool<UserAllocator>::purge_memory()
 
   list.invalidate();
   this->first = 0;
-  next_size = start_size;
+  next_size = start_size = init_next_size;
 
   return true;
 }
